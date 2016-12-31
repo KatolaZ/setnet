@@ -1,0 +1,21 @@
+setnet for Debian
+----------------
+
+setnet is a simple bash+dialog tool to congfigure ethernet and wifi networks.
+It is still at alpha stage, so you should use it AT YOUR OWN RISK.
+
+
+=== USAGE ===
+
+setnet is installed under /usr/sbin/setnet.sh and by default it uses the file
+/etc/setnetrc for configuration. There are currently only two defined variables 
+in setnetrc, namely
+
+  - WPA_FILE
+ 	This is the file configuration file used by wpa_supplicant
+  - LOGNAME
+	This is the file where logs will be put
+
+
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Fri, 30 Dec 2016 16:06:26 +0000

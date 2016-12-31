@@ -1,0 +1,5 @@
+setnet (0.1-1) unstable; urgency=medium
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Fri, 30 Dec 2016 16:06:26 +0000

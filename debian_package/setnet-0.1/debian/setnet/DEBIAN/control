@@ -1,0 +1,13 @@
+Package: setnet
+Version: 0.1-1
+Architecture: all
+Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Installed-Size: 64
+Depends: bash, dialog, iproute2, dhclient
+Suggests: wpasupplicant
+Section: unknown
+Priority: optional
+Homepage: http://kalos.mine.nu/setnet
+Description: simple bash+dialog tool to configure networks
+ setnet is a relatively simple bash+dialog tool to configure ethernet
+ and wifi connections.

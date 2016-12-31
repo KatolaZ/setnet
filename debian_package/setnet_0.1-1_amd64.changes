@@ -1,0 +1,31 @@
+Format: 1.8
+Date: Fri, 30 Dec 2016 16:06:26 +0000
+Source: setnet
+Binary: setnet
+Architecture: source all
+Version: 0.1-1
+Distribution: unstable
+Urgency: medium
+Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Changed-By: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Description:
+ setnet     - simple bash+dialog tool to configure networks
+Changes:
+ setnet (0.1-1) unstable; urgency=medium
+ .
+   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+Checksums-Sha1:
+ 0287d995e21fb9fbcd5d8bccc4c824b53f61edb0 800 setnet_0.1-1.dsc
+ a55b27f9d2ebec9680916348ca9770ea7b4d0589 14092 setnet_0.1.orig.tar.xz
+ 29f1f9c78aa25093fdc6ee9d5d4ae563d0eae109 8192 setnet_0.1-1.debian.tar.xz
+ b19640f028b439eef2de7ff6b4022c935d0f754d 8332 setnet_0.1-1_all.deb
+Checksums-Sha256:
+ 7c044be42f6f7d383daec54bbe679f59c8b711cdeeb25f126b96248c114cd492 800 setnet_0.1-1.dsc
+ f80b75ec868e193b7a5ae636a7a4c8758fb6f09a7f4ebd76e6b0409f8b9521ab 14092 setnet_0.1.orig.tar.xz
+ 273e71160476bce4752643b6a7a243cd18984bbac5f5283db6703381131d7d5c 8192 setnet_0.1-1.debian.tar.xz
+ 24fadb3c5ed21d3c4dbf11cece2e70fcd9a3cde63dfd44c9154ff2c252939dfe 8332 setnet_0.1-1_all.deb
+Files:
+ 9edeedf904abf7eebc00618d16a164d8 800 unknown optional setnet_0.1-1.dsc
+ b6f0c6985260c5663d456e3f52ee409b 14092 unknown optional setnet_0.1.orig.tar.xz
+ 6c2384edeaa47f02e2d6ebedf52a7023 8192 unknown optional setnet_0.1-1.debian.tar.xz
+ 816bb2dbcbc25011065051f31316ef9f 8332 unknown optional setnet_0.1-1_all.deb

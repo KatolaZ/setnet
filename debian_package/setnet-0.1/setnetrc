@@ -1,0 +1,19 @@
+##
+##
+## setnetrc -- configuration file for setnet
+##
+##
+
+##
+## The default configuration file for wpa_supplicant
+##
+WPA_FILE=/etc/wpa_supplicant/wpa_setnet.conf
+
+
+##
+## Logfile
+##
+LOGFILE=/var/log/setnet.log
+
+
+
