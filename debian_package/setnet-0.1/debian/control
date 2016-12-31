@@ -10,7 +10,7 @@ Homepage: http://kalos.mine.nu/setnet
 
 Package: setnet
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, bash, dialog, iproute2, dhclient
+Depends: ${shlibs:Depends}, ${misc:Depends}, bash, dialog, iproute2, dhcp-client
 Suggests: wpasupplicant
 Description: simple bash+dialog tool to configure networks 
  setnet is a relatively simple bash+dialog tool to configure ethernet

@@ -3,7 +3,7 @@ Version: 0.1-1
 Architecture: all
 Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
 Installed-Size: 64
-Depends: bash, dialog, iproute2, dhclient
+Depends: bash, dialog, iproute2, dhcp-client
 Suggests: wpasupplicant
 Section: unknown
 Priority: optional
