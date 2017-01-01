@@ -39,8 +39,9 @@ DIALOG="dialog --backtitle \"${TOPSTR}\" "
 
 
 
-TMPFILE=`(tempfile) 2>/dev/null` || tempfile=/tmp/setnet_$$
-WPA_PIDFILE=`(tempfile) 2>/dev/null` || tempfile=/tmp/setnet_wpapid_$$
+
+TMPFILE=$( (tempfile) 2>/dev/null) || TMPFILE=/tmp/setnet_$$
+WPA_PIDFILE=$( (tempfile) 2>/dev/null) || WPA_PIDFILE=/tmp/setnet_wpapid_$$
 
 WINDOW_WIDTH=75
 WINDOW_HEIGHT=20
@@ -664,7 +665,7 @@ function wifi_load_file(){
 	local DEVNAME=$1
 	
 	eval "${DIALOG}  --fselect ${WPA_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH} \
-			   2>${TMPFILE}|"
+			   2>${TMPFILE}"
 	
 	if [ $? -eq 0 ]; then
 		SEL_FILE=`<${TMPFILE}`
