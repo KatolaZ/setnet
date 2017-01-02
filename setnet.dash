@@ -28,19 +28,7 @@
 ## Initialisation
 ## 
 
-VERSION=0.1
-
-
-# THESHELL=$(head -1 $0 | cut -d "!" -f 2 | cut -d " " -f 1 )
-# THESHELL=$(basename $(realpath ${THESHELL}))
-
-
-# if [ ${THESHELL} = "sh" ] ||  [ ${THESHELL} = "dash" ]; then
-#     DIALOG="dialog"
-# else
-#     TOPSTR="setnet-0.1 [user: $(id -run)]"
-#     DIALOG="dialog --backtitle \"${TOPSTR}\" "
-# fi
+VERSION=0.2
 
 
 TOPSTR="setnet-0.1 [user: $(id -run)]"
@@ -138,6 +126,73 @@ log(){
     
 	  echo  "${LABEL}:" "${MSG}" >> "${LOGFILE}"
 	  
+}
+
+##
+## Check whether the shell which called the script is supported, or
+## exit. Currently, we support the follwing shells:
+##
+## - bash
+## - busybox
+## - dash
+## - ksh
+## - posh
+## - sh
+## - yash
+##
+
+##function
+check_shell(){
+
+    ##
+    ## FIXME!!! THIS TEST DOES NOT WORK yet...
+    ## 
+    CUR_SH=$(ps -p $$ -o comm=)
+    case ${CUR_SH} in
+        ash|bash|busybox|dash|ksh|posh|sh|yash)
+            log "check_shell" "The current shell (${CUR_SH}) is supported"
+            return
+            ;;
+        *)
+            log "check_shell" "The current shell (${CUR_SH}) is not supported"
+            echo "The current shell (${CUR_SH}) is not supported. Exiting..."
+            exit 1
+            ;;
+    esac
+}
+
+
+##
+## Check dependencies
+##
+## - check if the current shell is supported through check_shell
+##
+## - each command in HARD_DEPS MUST exists, or the script exits
+##
+## - each command in SOFT_DEPS SHOULD exists, od the script will log a
+##   warning
+##
+
+##function
+check_deps(){
+
+    ## FIXME FIRST.... check_shell
+    
+    for h in ${HARD_DEPS}; do
+        _W=$(which ${h})
+        if [ -z $_W ]; then
+            echo "Error: required command \"${h}\" not found. Exiting..."
+            exit 1
+        fi
+        log "check_deps" "${h}...found"
+    done
+    
+    for s in ${SOFT_DEPS}; do
+        _S=$(which ${s})
+        if [ -z $_S ]; then
+            log "check_deps" "WARNING: ${s} not found! Some functions might not work properly"
+        fi
+    done
 }
 
 ##########################################
@@ -625,7 +680,7 @@ sed -r -e 's/^\ +//g' | cut -d " " -f 1)
                      sed -r -e 's/^\ +//g' | cut -d " " -f 1 )
 	  WPA_PID_SAVED=$(cat ${WPA_PIDFILE})
     log "wifi_restart_wpa" "WPA_PID: ${WPA_PID} WPA_PID_SAVED: ${WPA_PID_SAVED}"
-	  if [ -n "${WPA_PID}" ] &&  ["${WPA_PID}" != "${WPA_PID_SAVED}" ]; then
+	  if [ -n "${WPA_PID}" ] &&  [ "${WPA_PID}" != "${WPA_PID_SAVED}" ]; then
 		    eval "${DIALOG}  --clear --msgbox 'Error restarting wpa_supplicant' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 	  else
@@ -1117,12 +1172,24 @@ EOF
 	return
 }
 
+##function
+initialise(){
+
+    echo "TRUNCATE_LOG: ${TRUNCATE_LOG}"
+
+    if [ -z ${TRUNCATE_LOG} ] || \
+           [ ${TRUNCATE_LOG} = "yes" ] || \
+               [ ${TRUNCATE_LOG} = "YES" ]; then
+	      truncate -s 0 ${LOGFILE}
+    fi
+	  trap cleanup 0 $SIG_NONE $SIG_HUP $SIG_INT $SIG_TRAP $SIG_TERM
+    
+}
+
 
 ##function 
 main(){
 
-	truncate -s 0 ${LOGFILE}
-	trap cleanup 0 $SIG_NONE $SIG_HUP $SIG_INT $SIG_TRAP $SIG_TERM
 
 	show_disclaimer
 	
@@ -1158,7 +1225,12 @@ main(){
 
 
 ##
-## Get the options
+## The script starts here
+##
+
+
+##
+## Get command-line arguments
 ## 
 
 SETNETRC=""
@@ -1191,8 +1263,26 @@ while getopts ":c:hv" opt; do
 done
 
 
+##
+## Load the configuration file
+##
 
 load_setnetrc ${SETNETRC}
+
+##
+## Init stuff
+##
+
+initialise 
+
+
+##
+## Check dependencies. If we are missing someting essential, then exit.
+##
+
+check_deps
+
+
 
 main 
 
