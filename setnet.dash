@@ -30,8 +30,6 @@
 
 VERSION=0.1
 
-DIALOGRC=~/.dialogrc
-
 
 # THESHELL=$(head -1 $0 | cut -d "!" -f 2 | cut -d " " -f 1 )
 # THESHELL=$(basename $(realpath ${THESHELL}))
@@ -138,14 +136,7 @@ log(){
     ##local
     MSG=$2
     
-    # if [ "${LABEL}" = "_self" ]; then
-	  #     if [ -n "${FUNCNAME}" ]; then
-		#         LABEL=${FUNCNAME[1]}
-    #     else
-    #         LABEL="$0 - ${LINENO}"
-    #     fi
-	  # fi
-	  echo  "$0: ${LABEL}:" "${MSG}" >> "${LOGFILE}"
+	  echo  "${LABEL}:" "${MSG}" >> "${LOGFILE}"
 	  
 }
 
@@ -187,18 +178,18 @@ edit_file(){
 get_addr_family(){
 	
 ##local 
-DEVNAME=$1
-##local 
-DEVFAMILY=$2
-
-	NUMADDR=$(ip -f "${DEVFAMILY}" addr show "${DEVNAME}" | grep "${DEVFAMILY}" | wc -l)
-	ADDR_STR=""
-	for i in $(seq ${NUMADDR}); do 
-		ADDR=$(ip -f "${DEVFAMILY}" addr show "${DEVNAME}" | grep "${DEVFAMILY}" | \
-			tail -n +$i | head -1 | sed -r -e "s:^\ +::g" | cut -d " " -f 2,4,6 |\
-			sed -r -e "s:\ : -- :g")
-		ADDR_STR="${ADDR_STR}\n${DEVFAMILY}: ${ADDR}\n"
-	done
+    DEVNAME=$1
+    ##local 
+    DEVFAMILY=$2
+    
+    NUMADDR=$(ip -f "${DEVFAMILY}" addr show "${DEVNAME}" | grep -c "${DEVFAMILY}")
+	  ADDR_STR=""
+	  for i in $(seq ${NUMADDR}); do 
+		    ADDR=$(ip -f "${DEVFAMILY}" addr show "${DEVNAME}" | grep "${DEVFAMILY}" | \
+			                tail -n +$i | head -1 | sed -r -e "s:^\ +::g" | cut -d " " -f 2,4,6 |\
+			                sed -r -e "s:\ : -- :g")
+		    ADDR_STR="${ADDR_STR}\n${DEVFAMILY}: ${ADDR}\n"
+	  done
 }
 
 ##
@@ -382,13 +373,13 @@ wifi_network_list(){
 	  LAST_IFS=$IFS
 	  IFS="|"
 	  while read NETNUM NETESSID NETBSSID NETFLAGS; do
-		    IS_DIS=$(echo ${NETFLAGS} | sed -r -e 's/\[//g;s/\]//g' | grep -i disabled | wc -l)
+		    IS_DIS=$(echo ${NETFLAGS} | sed -r -e 's/\[//g;s/\]//g' | grep -c -i disabled )
 		    if [ ${IS_DIS} -eq 1 ]; then
 		        STATUS="(DIS)"
 		    else
 		        STATUS="(ENAB)"
 		    fi
-		    IS_CUR=$(echo ${NETFLAGS} | sed -r -e 's/\[//g;s/\]//g' | grep -i current | wc -l)
+		    IS_CUR=$(echo ${NETFLAGS} | sed -r -e 's/\[//g;s/\]//g' | grep -c -i current )
 		    if [ ${IS_CUR} -eq 1 ]; then
 			      STATUS="${STATUS}(CUR)"
 		    fi
@@ -427,7 +418,7 @@ wifi_authenticate(){
     
 	  
 	  NET_EXISTS=$(wpa_cli -i ${DEVNAME} list_networks | tail -n +2 | sed -r -e 's/\t/\|/g' \
-      | cut -d "|" -f 2 | grep "${W_ESSID}$" | wc -l)
+                        | cut -d "|" -f 2 | grep -c "${W_ESSID}$" )
 	  if [ ${NET_EXISTS} != 0 ]; then
 		    NET_NUM=$(wpa_cli -i ${DEVNAME} list_networks | tail -n +2 | sed -r -e 's/\t/\|/g' \
                          | cut -d "|" -f 1,2 | grep "${W_ESSID}$" | cut -d "|" -f 1)
@@ -440,7 +431,7 @@ wifi_authenticate(){
 		    fi
 	  fi
     
-	  HAS_WPA=$(echo "${W_FLAGS}" | grep -E "WPA.*-PSK" | wc -l)
+	  HAS_WPA=$(echo "${W_FLAGS}" | grep -E -c "WPA.*-PSK" )
     
 	  log "wifi_authenticate" "HAS_WPA: \"${HAS_WPA}\"" 
 	  
@@ -479,7 +470,7 @@ wifi_authenticate(){
 		    return 0
 	  fi
 	  
-	  HAS_ESS=$(echo "${W_FLAGS}" | grep -E "ESS" | wc -l)
+	  HAS_ESS=$(echo "${W_FLAGS}" | grep -E -c "ESS" )
     
 	  log "wifi_authenticate" "HAS_ESS: \"${HAS_ESS}\""
 	  
@@ -628,16 +619,13 @@ sed -r -e 's/^\ +//g' | cut -d " " -f 1)
     
 	  log "wifi_restart_wpa" "WPA_PID: ${WPA_PID}"
 	  kill -9 ${WPA_PID}
-
-	  if [ $(($?)) -gt 0 ]; then
-	      eval "${DIALOG}  --clear --msgbox 'Error killing wpa_supplicant' \
-			  ${INFO_HEIGHT} ${INFO_WIDTH}"
-	  fi
     
-	  wpa_supplicant -B -i ${DEVNAME} -c ${WPA_FILE} -P${WPA_PIDFILE}
-	  WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME}" | cut -d " " -f 1 )
+	  wpa_supplicant -B -i ${DEVNAME} -c ${WPA_FILE} -P${WPA_PIDFILE} 2>/dev/null
+	  WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME}" | \
+                     sed -r -e 's/^\ +//g' | cut -d " " -f 1 )
 	  WPA_PID_SAVED=$(cat ${WPA_PIDFILE})
-	  if [ -n "${WPA_PID}" ] || [ "${WPA_PID}" != "${WPA_PID_SAVED}" ]; then
+    log "wifi_restart_wpa" "WPA_PID: ${WPA_PID} WPA_PID_SAVED: ${WPA_PID_SAVED}"
+	  if [ -n "${WPA_PID}" ] &&  ["${WPA_PID}" != "${WPA_PID_SAVED}" ]; then
 		    eval "${DIALOG}  --clear --msgbox 'Error restarting wpa_supplicant' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 	  else
@@ -784,9 +772,10 @@ config_wifi(){
 			   'Edit' 'Edit current configuration file' \
 			   'Save' 'Save configuration to file'\
 			   'Load' 'Load configuration from file'\
-			   'New' 'Create new configuration file' "\
-		         2>${TMPFILE}
-		    if [ $? -eq 1 ]; then
+			   'New' 'Create new configuration file' " \
+             2>${TMPFILE}
+        
+		    if [ $? = "1" ]; then
 			      return
 		    fi
 		    ACTION=$(cat ${TMPFILE})
