@@ -35,8 +35,6 @@ TOPSTR="setnet-0.1 [user: $(id -run)]"
 DIALOG="dialog --backtitle \"${TOPSTR}\" "
 
 
-TMPFILE=$( (tempfile) 2>/dev/null) || TMPFILE=/tmp/setnet_$$
-WPA_PIDFILE=$( (tempfile) 2>/dev/null) || WPA_PIDFILE=/tmp/setnet_wpapid_$$
 
 WINDOW_WIDTH=75
 WINDOW_HEIGHT=20
@@ -1175,14 +1173,17 @@ EOF
 ##function
 initialise(){
 
-    echo "TRUNCATE_LOG: ${TRUNCATE_LOG}"
+
+    TMPFILE=$( (tempfile) 2>/dev/null) || TMPFILE=/tmp/setnet_$$
+    WPA_PIDFILE=$( (tempfile) 2>/dev/null) || WPA_PIDFILE=/tmp/setnet_wpapid_$$
+    
+	  trap cleanup 0 NONE HUP INT TRAP TERM
 
     if [ -z ${TRUNCATE_LOG} ] || \
            [ ${TRUNCATE_LOG} = "yes" ] || \
                [ ${TRUNCATE_LOG} = "YES" ]; then
 	      truncate -s 0 ${LOGFILE}
     fi
-	  trap cleanup 0 $SIG_NONE $SIG_HUP $SIG_INT $SIG_TRAP $SIG_TERM
     
 }
 
@@ -1282,8 +1283,9 @@ initialise
 
 check_deps
 
-
+##
+## This is the main loop
+##
 
 main 
-
 
