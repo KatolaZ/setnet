@@ -20,16 +20,3 @@ LOGFILE=/var/log/setnet.log
 ##
 TRUNCATE_LOG="yes"
 
-##
-## Required dependencies. If any of those commands is missing,
-## the script will exit
-##
-
-HARD_DEPS="ip dhclient dialog"
-
-##
-## Suggested dependencies. The script will issue a warning if any of
-## those commands is missing
-##
-
-SOFT_DEPS="wpa_cli wpa_supplicant"

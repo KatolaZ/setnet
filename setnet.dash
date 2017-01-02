@@ -19,7 +19,7 @@
 #
 # ----------------------------------------------------------------------
 #
-# (c) KatolaZ (katolaz@freaknet.org) -- 2016/12/26
+# Copyleft (c) KatolaZ (katolaz@freaknet.org) -- (2016, 2017)
 #
 #
 
@@ -31,24 +31,80 @@
 VERSION=0.2
 
 
-TOPSTR="setnet-0.1 [user: $(id -run)]"
+TOPSTR="setnet-${VERSION} [user: $(id -run)]"
 DIALOG="dialog --backtitle \"${TOPSTR}\" "
 
 
+###############################
+##                           ##
+## Internal config variables ##
+##                           ##
+###############################
+
+##
+## Required dependencies. If any of those commands is missing,
+## the script will exit
+##
+
+HARD_DEPS="ip dhclient dialog netstat"
+
+##
+## Suggested dependencies. The script will issue a warning if any of
+## those commands is missing
+##
+
+SOFT_DEPS="wpa_cli wpa_supplicant"
+
+#################################
+
+#####################################
+##                                 ##
+## HEIGHT/WIDTH of various dialogs ##
+##                                 ##
+#####################################
+
+##
+## Regular windows
+##
 
 WINDOW_WIDTH=75
 WINDOW_HEIGHT=20
 
+##
+## Infoboxes
+##
 INFO_WIDTH=40
 INFO_HEIGHT=10
 
+
+##
+## Forms
+##
 FORM_WIDTH=60
 FORM_HEIGHT=12
 
+##
+## Large windows
+##
+
+LARGE_WIDTH=80
+LARGE_HEIGHT=20
+
+
+#################################
+
+################################
+##                            ##
+## Supported network families ##
+##                            ##
+################################
+
 NET_FAMILIES="inet inet6"
 
+#################################
+
 ##
-## Load setnetrc 
+## Load the configuration file "setnetrc"
 ##
 
 ##function 
@@ -97,6 +153,10 @@ load_setnetrc(){
 }
 
 
+##
+## handler called upon exit/signal (NONE HUP INT TRAP TERM QUIT)
+##
+
 ##function 
 cleanup(){
 	rm -f ${TMPFILE}
@@ -134,6 +194,7 @@ log(){
 ## - busybox
 ## - dash
 ## - ksh
+## - mksh
 ## - posh
 ## - sh
 ## - yash
@@ -147,7 +208,7 @@ check_shell(){
     ## 
     CUR_SH=$(ps -p $$ -o comm=)
     case ${CUR_SH} in
-        ash|bash|busybox|dash|ksh|posh|sh|yash)
+        ash|bash|busybox|dash|ksh|mksh|posh|sh|yash)
             log "check_shell" "The current shell (${CUR_SH}) is supported"
             return
             ;;
@@ -192,6 +253,22 @@ check_deps(){
         fi
     done
 }
+
+##
+## Generic function fo unimplemented features. It just pops up a
+## message-box and returns
+##
+
+##function
+unimplemented(){
+
+    LABEL=$1
+    
+		eval "${DIALOG}  --msgbox 'Sorry! '$LABEL' not implemented, yet!' \
+						  ${INFO_HEIGHT} ${INFO_WIDTH}" 2>${TMPFILE}
+}
+
+
 
 ##########################################
 
@@ -863,8 +940,7 @@ config_wifi(){
 				        wifi_load_file ${DEVNAME}
 				        ;;
 			      "New")
-				        eval "${DIALOG}  --msgbox 'Sorry!Not yet implemented!' \
-						  ${INFO_HEIGHT} ${INFO_WIDTH}" 2>${TMPFILE}
+                unimplemented "New"
 				        ;;
 		    esac
 	  done
@@ -1030,7 +1106,7 @@ show_copyright(){
 
 == setnet.sh 0.1 ==
 
-(c) KatolaZ (katolaz@freaknet.org) -- 2016
+(c) KatolaZ (katolaz@freaknet.org) -- 2016, 2017
 
 EOF
 	eval "${DIALOG}  --clear --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
@@ -1060,7 +1136,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ----------------------------------------------------------------------
 
- (c) KatolaZ <katolaz@freaknet.org> -- 2016
+ (c) KatolaZ <katolaz@freaknet.org> -- 2016, 2017
 
 ----------------------------------------------------------------------
 
@@ -1078,7 +1154,7 @@ about_menu(){
 		    eval "${DIALOG}  --cancel-label 'Up' --menu 'setnet ${VERSION} -- About' \
 			   ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 6 \
 			   'Info' 'General information' \
-			   'Copyright' 'Copyright information' \
+			   'Copyleft' 'Copyleft information' \
 			   'License' 'How to distribute this program' " \
 			   2> ${TMPFILE}
 		    if [ $? -eq 1 ];then
@@ -1090,7 +1166,7 @@ about_menu(){
 			      "Info")
 				        show_info
 				        ;;
-			      "Copyright")
+			      "Copyleft")
 				        show_copyright
 				        ;;
 			      "License")
@@ -1098,6 +1174,189 @@ about_menu(){
 				        ;;
 		    esac
 	  done
+}
+
+##function
+netdiag_DNS(){
+
+    NAMESERVERS=$(grep '^nameserver' /etc/resolv.conf)
+    MSG_STR="Configured name servers in /etc/resolv.conf ==\n\n${NAMESERVERS}"
+
+    eval "${DIALOG} --clear --title 'DNS servers' --msgbox '${MSG_STR}' "\
+         ${WINDOW_HEIGHT} ${WINDOW_WIDTH}
+    
+}
+
+##function
+netdiag_routes(){
+
+    ROUTES=$(netstat -rn > ${TMPFILE} )
+
+    eval "${DIALOG} --clear --no-collapse --title 'Routing table (netstat -rn) [arrows to scroll]'" \
+         "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
+         ${LARGE_HEIGHT} ${LARGE_WIDTH}
+}
+
+##function
+netdiag_ARP(){
+
+    ARP=$(cat /proc/net/arp >${TMPFILE})
+
+    eval "${DIALOG} --clear --no-collapse --title 'ARP table (/proc/net/arp) [arrows to scroll]'" \
+         "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
+         ${LARGE_HEIGHT} ${LARGE_WIDTH}
+}
+
+##function
+netdiag_connections(){
+
+    SERV=$(netstat -tnp | sed -r -e 's/$/\n/g' > ${TMPFILE})
+
+    eval "${DIALOG} --clear --no-collapse "\
+         " --title 'Active network connections (netstat -tnp) [arrows to scroll]'" \
+         "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
+         ${LARGE_HEIGHT} ${LARGE_WIDTH}
+}
+
+
+##function
+netdiag_services(){
+
+    SERV=$(netstat -ltnp | sed -r -e 's/$/\n/g' > ${TMPFILE})
+    
+    eval "${DIALOG} --clear --no-collapse "\
+         " --title 'Active network services (netstat -ltnp) [arrows to scroll]'" \
+         "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
+         ${LARGE_HEIGHT} ${LARGE_WIDTH}
+}
+
+
+##function
+netdiag_ping(){
+    
+    eval "${DIALOG} --insecure --inputbox 'Host or IP to ping:' \
+				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
+
+    if [ $? -ne 0 ]; then
+       	eval "${DIALOG}  --clear --msgbox 'Ping Aborted' \
+					   ${INFO_HEIGHT} ${INFO_WIDTH}"
+        return
+    else
+        PINGIP=$(cat ${TMPFILE})
+        ping -c 5 ${PINGIP} > ${TMPFILE} &
+        PINGPID=$!
+        eval "${DIALOG} --clear --title 'Ping ${PINGIP}'"\
+             "--tailbox ${TMPFILE} " \
+             ${LARGE_HEIGHT} ${LARGE_WIDTH}
+        if [ $? -ne 0 ];then
+            kill -9 ${PINGPID}
+        fi
+    fi
+
+}
+
+##function
+netdiag_traceroute(){
+    
+    eval "${DIALOG} --insecure --inputbox 'Host or IP to trace:' \
+				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
+
+    if [ $? -ne 0 ]; then
+       	eval "${DIALOG}  --clear --msgbox 'Traceroute Aborted' \
+					   ${INFO_HEIGHT} ${INFO_WIDTH}"
+        return
+    else
+        TRACEIP=$(cat ${TMPFILE})
+        traceroute ${TRACEIP} > ${TMPFILE} &
+        TRCPID=$!
+        eval "${DIALOG} --clear --title 'Traceroute ${TRACEIP}'"\
+             "--tailbox ${TMPFILE} " \
+             ${LARGE_HEIGHT} ${LARGE_WIDTH}
+        if [ $? -ne 0 ];then
+            kill -9 ${TRCPID}
+        fi
+    fi
+}
+
+
+##function
+netdiag_query(){
+    
+    eval "${DIALOG} --insecure --inputbox 'Hostname or IP to query:' \
+				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
+    
+    if [ $? -ne 0 ]; then
+       	eval "${DIALOG}  --clear --msgbox 'DNS query aborted' \
+					   ${INFO_HEIGHT} ${INFO_WIDTH}"
+        return
+    else
+        QUERYIP=$(cat ${TMPFILE})
+        host ${QUERYIP} > ${TMPFILE} &
+        QUERYPID=$!
+        eval "${DIALOG} --clear --title 'host ${QUERYIP}'"\
+             "--tailbox ${TMPFILE} " \
+             ${LARGE_HEIGHT} ${LARGE_WIDTH}
+        if [ $? -ne 0 ];then
+            kill -9 ${QUERYPID}
+        fi
+    fi
+
+}
+
+
+##
+## Main menu for network diagnostics
+##
+
+##function
+netdiag_menu(){
+    
+	  while  true; do 
+		    eval "${DIALOG}  --cancel-label 'Up' --menu 'Network diagnostics' \
+			   ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 10 \
+			   'ARP' 'Show ARP table'  \
+         'Connections' 'List active network connections' \
+			   'DNS' 'List DNS servers' \
+         'Ping' 'Ping a host'  \
+         'Query' 'DNS Query' \
+			   'Routes' 'Show routing table' \
+         'Services' 'List active network daemons'  \
+         'Traceroute' 'Show the route to a host' " \
+			       2> ${TMPFILE}
+		    if [ $? -eq 1 ];then
+			      return;
+		    fi
+		    
+		    ACTION=$(cat ${TMPFILE})
+		    case ${ACTION} in
+			      "ARP")
+				        netdiag_ARP
+				        ;;
+			      "Connections")
+				        netdiag_connections
+				        ;;
+			      "DNS")
+				        netdiag_DNS
+				        ;;
+            "Ping")
+				        netdiag_ping
+				        ;;
+            "Query")
+                netdiag_query
+                ;;
+			      "Routes")
+				        netdiag_routes
+                ;;
+			      "Services")
+				        netdiag_services
+				        ;;
+			      "Traceroute")
+				        netdiag_traceroute
+				        ;;
+		    esac
+	  done
+    
+    
 }
 
 
@@ -1108,7 +1367,8 @@ show_toplevel(){
 	  eval "${DIALOG} --clear --cancel-label 'Quit' --menu 'Main Menu' \
 		   ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 6 \
 		   'Setup' 'Setup interfaces' \
-		   'About' 'Info & Copyright'" 2> ${TMPFILE}
+       'Info' 'Network diagnostics' \
+		   'About' 'License & Copyleft'" 2> ${TMPFILE}
     
 	  return $?
 }
@@ -1132,7 +1392,7 @@ show_version(){
 ##local 
 SCRIPTNAME=$1
 	echo "${SCRIPTNAME} -- version ${VERSION}"
-	echo "Copyright (C) Vincenzo \"KatolaZ\" Nicosia (katolaz@freaknet.org) -- 2016"
+	echo "Copyleft (C) Vincenzo \"KatolaZ\" Nicosia (katolaz@freaknet.org) -- 2016, 2017"
 	echo "This is free software. You can use and redistribute it under the "
 	echo "terms of the GNU General Public Licence version 3 or (at your option)"
 	echo "any later version."
@@ -1149,7 +1409,7 @@ show_disclaimer(){
 
                 == setnet.sh 0.1 ==
 
-      (c) KatolaZ (katolaz@freaknet.org) -- 2016
+      (c) KatolaZ (katolaz@freaknet.org) -- 2016, 2017
 
     -+- This is the alpha release of setnet.sh -+-
    
@@ -1177,7 +1437,7 @@ initialise(){
     TMPFILE=$( (tempfile) 2>/dev/null) || TMPFILE=/tmp/setnet_$$
     WPA_PIDFILE=$( (tempfile) 2>/dev/null) || WPA_PIDFILE=/tmp/setnet_wpapid_$$
     
-	  trap cleanup 0 NONE HUP INT TRAP TERM
+	  trap cleanup 0 NONE HUP INT TRAP TERM QUIT
 
     if [ -z ${TRUNCATE_LOG} ] || \
            [ ${TRUNCATE_LOG} = "yes" ] || \
@@ -1216,6 +1476,9 @@ main(){
 			    "Setup")
 				      dev_config_menu
 				      ;;
+          "Info")
+              netdiag_menu
+              ;;
 			    "About")
 				      about_menu
 				      ;;
