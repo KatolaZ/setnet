@@ -1594,10 +1594,7 @@ dump_file(){
 ##function
 dump_pastebin(){
     
-    CONF=$1
-
-    
-
+    unimplemented "pastebin"
 }
 
 ##function 
