@@ -1,6 +1,6 @@
 # setnet.sh #
 
-This is a simple bash+dialog script to configure and manage network
+This is a simple shell script to configure and manage network
 interfaces. At the moment, it is only able to bring up ethernet and
 wi-fi networks (WPA/WPA2/ESS), using either static or dhcp-based IP
 configuration.
@@ -9,10 +9,12 @@ configuration.
 
 setnet.sh depends on the following packages:
 
-- bash (maybe dash/sh could be enough...)
+- a standard posix shell
+  (tested with bash, busybox, dash, ksh, mksh, posh, and yash)
 - dialog
 - wpa_supplicant
 - dhclient
 - iproute2
+
 
 
