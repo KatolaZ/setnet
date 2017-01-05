@@ -1,3 +1,6 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
 Format: 3.0 (quilt)
 Source: setnet
 Binary: setnet
@@ -10,11 +13,19 @@ Build-Depends: debhelper (>= 9)
 Package-List:
  setnet deb unknown optional arch=all
 Checksums-Sha1:
- a55b27f9d2ebec9680916348ca9770ea7b4d0589 14092 setnet_0.1.orig.tar.xz
- b3b1f290469c8551aa880ea330c06f7399caa649 8180 setnet_0.1-1.debian.tar.xz
+ fa44398b362a88d12574d88ee78ac28345cdeb7a 14296 setnet_0.1.orig.tar.xz
+ de07a55eb28ddec304df8db1d902ef66b5dde8e5 8176 setnet_0.1-1.debian.tar.xz
 Checksums-Sha256:
- f80b75ec868e193b7a5ae636a7a4c8758fb6f09a7f4ebd76e6b0409f8b9521ab 14092 setnet_0.1.orig.tar.xz
- 2f96cb066eb2efc587871b376e2b0eeb5b111deaaa7c7b30fbfa46713d8ddf76 8180 setnet_0.1-1.debian.tar.xz
+ 40f493dcbba73700730adb9064c46117b95691938bb3665dee85123707409b39 14296 setnet_0.1.orig.tar.xz
+ 5443bbe4476de250cc75dc94ff997b10f5c01f2574570c7410494689ee2bdfe9 8176 setnet_0.1-1.debian.tar.xz
 Files:
- b6f0c6985260c5663d456e3f52ee409b 14092 setnet_0.1.orig.tar.xz
- 812548b181ee08263ede60c2e82189b5 8180 setnet_0.1-1.debian.tar.xz
+ 86a57dc10821d0a4ec49cecdbc2f58cb 14296 setnet_0.1.orig.tar.xz
+ 03d24ba7e89c749f5ff392872c73fff3 8176 setnet_0.1-1.debian.tar.xz
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEARECAAYFAlhnsQ8ACgkQXyCzrgtfBi9xtACeJPM+AtHFhiYbe/U/qwEuO2IM
++Z8An3PkUOk4cKVeqZ67//SlFtBNFuC+
+=RMrq
+-----END PGP SIGNATURE-----

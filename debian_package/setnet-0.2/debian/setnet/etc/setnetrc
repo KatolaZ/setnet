@@ -16,7 +16,7 @@ WPA_FILE=/etc/wpa_supplicant/wpa_setnet.conf
 LOGFILE=/var/log/setnet.log
 
 ##
-## Truncate the log file at startup
+##
 ##
 TRUNCATE_LOG="yes"
 

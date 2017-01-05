@@ -1,0 +1,27 @@
+setnet (0.2-1) unstable; urgency=medium
+
+		* Initial release (20170104)
+
+		== Major Changes ==
+
+		+ Polished code to make it posix-shell compliant
+
+		+ Tested with bash, busybox, dash, ksh, mksh, posh, yash
+
+		+ Added support and checks for hard, soft, and optional
+		dependencies
+
+		+ Added standard command line options (-c, -h, -v)
+
+		+ Added submenu "Info" with basic network testing tools
+
+		+ Added submenu "Dump" to dump network information to a file
+
+		+ Added submenu "Log" (shows setnet logfile)
+
+		+ Added status information in device configuration panel
+
+		+ Added minimal README.Debian file
+
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Wed, 04 Jan 2017 18:52:56 +0000

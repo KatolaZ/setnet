@@ -1,0 +1,3 @@
+setnet.sh /usr/sbin
+setnetrc /etc/
+wpa_setnet.conf /etc/wpa_supplicant/

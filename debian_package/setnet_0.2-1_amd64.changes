@@ -1,0 +1,63 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Format: 1.8
+Date: Wed, 04 Jan 2017 18:52:56 +0000
+Source: setnet
+Binary: setnet
+Architecture: source all
+Version: 0.2-1
+Distribution: unstable
+Urgency: medium
+Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Changed-By: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Description:
+ setnet     - simple shell/dialog tool to configure networks
+Changes:
+ setnet (0.2-1) unstable; urgency=medium
+ .
+ 		* Initial release (20170104)
+ .
+ 		== Major Changes ==
+ .
+ 		+ Polished code to make it posix-shell compliant
+ .
+ 		+ Tested with bash, busybox, dash, ksh, mksh, posh, yash
+ .
+ 		+ Added support and checks for hard, soft, and optional
+ 		dependencies
+ .
+ 		+ Added standard command line options (-c, -h, -v)
+ .
+ 		+ Added submenu "Info" with basic network testing tools
+ .
+ 		+ Added submenu "Dump" to dump network information to a file
+ .
+ 		+ Added submenu "Log" (shows setnet logfile)
+ .
+ 		+ Added status information in device configuration panel
+ .
+ 		+ Added minimal README.Debian file
+Checksums-Sha1:
+ 60a6993087da3b51479d5c6d126c4a4014a7e353 1029 setnet_0.2-1.dsc
+ 6687c70cfd39d5966b6083dd1a472cc9a8c9f11b 18332 setnet_0.2.orig.tar.xz
+ 42fddb35b45898826c6c737bd2dd40ad0c25eee9 9680 setnet_0.2-1.debian.tar.xz
+ 107c1365706b06e5cadcb3117df4331d40aa7b1e 12920 setnet_0.2-1_all.deb
+Checksums-Sha256:
+ fca27a6cb28b799b54c054a834e783d4274a08f184fcf40869190f6673878244 1029 setnet_0.2-1.dsc
+ 8b3b0f74a2f44c2d68f1044ed139cf4dd7117219614ca9d54a0af4a1875579aa 18332 setnet_0.2.orig.tar.xz
+ 4aec8c6f7989fdb0356120de7f598083519bbe681868af787b5a472f162b21c7 9680 setnet_0.2-1.debian.tar.xz
+ 4be9629c81b73b65676ecd1c6b5a178608cb1a3d29b99306ccd77c9411298117 12920 setnet_0.2-1_all.deb
+Files:
+ 01a59603d2153e9ad1cd11b61ec5ce6a 1029 unknown optional setnet_0.2-1.dsc
+ 0582808467c275c83cc139d0becc9f73 18332 unknown optional setnet_0.2.orig.tar.xz
+ 83126d984701925dcfbccb8b8df9a76c 9680 unknown optional setnet_0.2-1.debian.tar.xz
+ e8fc933f4eb0d80f3ea0a698036a5ddf 12920 unknown optional setnet_0.2-1_all.deb
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEARECAAYFAlhtc5MACgkQXyCzrgtfBi+BMACdEjed8D0UWSttaQcpY1XRpjBI
+nIUAnR/SEkhqqHv9P1VbHbCEmoUQNa9J
+=lXMS
+-----END PGP SIGNATURE-----

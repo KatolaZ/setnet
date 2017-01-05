@@ -664,7 +664,7 @@ function wifi_load_file(){
 	local DEVNAME=$1
 	
 	eval "${DIALOG}  --fselect ${WPA_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH} \
-			   2>${TMPFILE}|"
+			   2>${TMPFILE}"
 	
 	if [ $? -eq 0 ]; then
 		SEL_FILE=`<${TMPFILE}`
