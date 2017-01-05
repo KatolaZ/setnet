@@ -295,6 +295,20 @@ unimplemented(){
 }
 
 
+##function
+check_sudo(){
+
+	LABEL="$1"
+
+	if [ "${USING_SUDO}" = "1" ]; then
+		eval "${DIALOG} --msgbox '${LABEL}' ${INFO_HEIGHT} ${INFO_WIDTH} " 2>${TMPFILE}
+		return 1
+	else
+		return 0
+	fi
+
+}
+
 
 ##########################################
 
@@ -865,47 +879,57 @@ wifi_disable(){
 
 
 
+
+
 ##function 
 wifi_load_file(){
 	
 ##local 
     DEVNAME=$1
-	  
-	  eval "${DIALOG}  --fselect ${WPA_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" \
-			   2>${TMPFILE}
-	  
-	  if [ $? -eq 0 ]; then
-		    SEL_FILE=$(cat ${TMPFILE})
-		    while [ -d "${SEL_FILE}" ]; do
-			      eval "${DIALOG}  --fselect ${SEL_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" \
-					   2>${TMPFILE}
-			      if [ $? -eq 0 ]; then
-				        SEL_FILE=$(cat ${TMPFILE})
-			      else
-				        eval "${DIALOG}  --clear --msgbox 'WPA_FILE was not modified' \
+
+	MSG="You are running setnet through sudo or sup!!!\nLoad file is
+	disabled!"  check_sudo "${MSG}"
+
+	if [ $? -eq 1 ]; then
+		return
+	fi
+
+	
+	eval "${DIALOG}  --fselect ${WPA_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" \
+		 2>${TMPFILE}
+	
+	if [ $? -eq 0 ]; then
+		SEL_FILE=$(cat ${TMPFILE})
+		while [ -d "${SEL_FILE}" ]; do
+			eval "${DIALOG}  --fselect ${SEL_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" \
+				 2>${TMPFILE}
+			if [ $? -eq 0 ]; then
+				SEL_FILE=$(cat ${TMPFILE})
+			else
+				eval "${DIALOG}  --clear --msgbox 'WPA_FILE was not modified' \
 						   ${INFO_HEIGHT} ${INFO_WIDTH}"
-				        return
-			      fi
-		    done
-		    
-		    if [ -f "${SEL_FILE}" ]; then
-			      WPA_FILE=${SEL_FILE}
-			      eval "${DIALOG}  --clear --defaultno --yesno \
+				return
+			fi
+		done
+		
+		if [ -f "${SEL_FILE}" ]; then
+			WPA_FILE=${SEL_FILE}
+			eval "${DIALOG}  --clear --defaultno --yesno \
 					   'WPA_FILE changed to ${WPA_FILE}\nRestart wpa_supplicant?' \
 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
-			      if [ $? -eq 0 ]; then
-				        wifi_restart_wpa ${DEVNAME} ${WPA_FILE}
-			      fi
-		    else
-			      eval "${DIALOG}  --clear --msgbox 'Invalid file name!\n WPA_FILE *not* changed' \
+			if [ $? -eq 0 ]; then
+				wifi_restart_wpa ${DEVNAME} ${WPA_FILE}
+			fi
+		else
+			eval "${DIALOG}  --clear --msgbox 'Invalid file name!\n WPA_FILE *not* changed' \
 					  ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
-			      return 
-		    fi
-	  else
-		    eval "${DIALOG}  --clear --msgbox 'WPA_FILE was not modified' \
+			return 
+		fi
+	else
+		eval "${DIALOG}  --clear --msgbox 'WPA_FILE was not modified' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
-	  fi
-	  
+	fi
+	
 }
 
 
@@ -1716,14 +1740,34 @@ initialise(){
     TMPFILE=$( (tempfile) 2>/dev/null) || TMPFILE=/tmp/setnet_$$
     WPA_PIDFILE=$( (tempfile) 2>/dev/null) || WPA_PIDFILE=/tmp/setnet_wpapid_$$
     
-	  trap cleanup 0 HUP INT TRAP TERM QUIT
+	trap cleanup 0 HUP INT TRAP TERM QUIT
 
     if [ -z ${TRUNCATE_LOG} ] || \
            [ ${TRUNCATE_LOG} = "yes" ] || \
                [ ${TRUNCATE_LOG} = "YES" ]; then
 	      truncate -s 0 ${LOGFILE}
     fi
-    
+
+	log "setnet" "Starting afresh on $(date)"
+
+	
+	EUID=$(id -ru)
+	if [ "${EUID}" = "0" ] &&
+		   [ -n "${SUDO_UID}" ] &&
+		   [ "${EUID}" != "${SUDO_UID}" ]; then
+		USING_SUDO="1"
+	elif [ "${EUID}" = "0" ] &&
+		   [ -n "${SUP_UID}" ] &&
+		   [ "${EUID}" != "${SUP_UID}" ]; then
+		USING_SUDO="1"
+	else
+		USING_SUDO="0"
+	fi
+
+	log "initialise" "EUID: ${EUID}"
+	log "initialise" "SUDO_UID: ${SUDO_UID}"
+	log "initialise" "SUP_UID: ${SUP_UID}"
+	log "initialise" "USING_SUDO: ${USING_SUDO}"
 }
 
 
@@ -1742,7 +1786,6 @@ main(){
 
 	show_disclaimer
 	
-	log "setnet" "Starting afresh on $(date)"
 	SETNETRC=$(realpath ${SETNETRC})
 	log "main" "Using config file \"${SETNETRC}\""
 	WPA_FILE=$(realpath ${WPA_FILE})
