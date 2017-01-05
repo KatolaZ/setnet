@@ -5,6 +5,11 @@ interfaces. At the moment, it is only able to bring up ethernet and
 wi-fi networks (WPA/WPA2/ESS), using either static or dhcp-based IP
 configuration.
 
+For more information, please visit the webpage:
+
+[http://kalos.mine.nu/setnet](http://kalos.mine.nu/setnet)
+
+
 ## Dependencies ##
 
 setnet.sh depends on the following packages:
