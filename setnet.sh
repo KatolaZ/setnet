@@ -47,7 +47,7 @@ DIALOG="dialog --backtitle \"${TOPSTR}\" "
 ## the script will exit
 ##
 
-HARD_DEPS="ip dhclient dialog iwconfig"
+HARD_DEPS="ip dhclient dialog iw sed grep cat awk which"
 
 ##
 ## Suggested dependencies. The script will issue a warning if any of
@@ -376,7 +376,9 @@ DEVNAME=$1
 	fi
 
 	DEVMAC=$(ip link show "${DEVNAME}" | tail -n +2 | sed -r 's/^\ +//g' | cut -d " " -f 2)
-	DEVCONF="MAC: ${DEVMAC}\n"
+	DEV_STATUS=$(ip -o link | cut -d " " -f 2,9 | grep -E "^${DEVNAME}: " | cut -d " " -f 2)
+	
+	DEVCONF="MAC: ${DEVMAC}\nLINK STATUS: ${DEV_STATUS}\n"
 
 	log "show_device_conf" "NET_FAMILIES: \"${NET_FAMILIES}\""
 	
@@ -470,11 +472,16 @@ ${DEV_IP}\n${DEV_NET}\n${DEV_NETMASK}\n${DEV_GW}\n${DEV_DNS1}\n${DEV_DNS2}'\
 config_ethernet_dhcp(){
 
 ##local 
-DEVNAME=$1
+	DEVNAME=$1
 
-	eval "${DIALOG}  --msgbox 'Running \"dhclient ${DEVNAME}\"' ${INFO_HEIGHT} ${INFO_WIDTH}"
-	dhclient -r ${DEVNAME} 
-	dhclient ${DEVNAME} 
+	##eval "${DIALOG}  --msgbox 'Running \"dhclient ${DEVNAME}\"' ${INFO_HEIGHT} ${INFO_WIDTH}"
+	dhclient -r ${DEVNAME}  2>/dev/null
+	dhclient -v ${DEVNAME} 2>&1 |
+		eval "${DIALOG} --clear --title 'Running dhclient...' \
+                 --programbox  ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" 2>${TMPFILE}
+    if [ $! -ne 0 ];then
+		log "config_ethernet_dhcp" "dhclient aborted"
+	fi
 	show_device_conf ${DEVNAME}
 }
 
@@ -1012,19 +1019,18 @@ configure_device(){
 ##local 
     DEVNAME=$1
 
-    ## Check if the network device is a wifi -- WEAK
-    IS_WIFI=$(iwconfig ${DEVNAME} 2>/dev/null | grep -c "IEEE 802.11")
+    ## Check if the network device is a wifi -- this should be more robust...
+    iw ${DEVNAME} info 2>&1 >/dev/null
     
-	  case ${IS_WIFI} in
-		    0)
-			      config_ethernet ${DEVNAME}
-			      ;;
-		    *)
-			      config_wifi ${DEVNAME}
-			      ;;
-	  esac
-    
-
+	case $? in
+		0)
+			config_wifi ${DEVNAME}
+			;;
+		*)
+			config_ethernet ${DEVNAME}
+			;;
+	esac
+	
 }
 
 
