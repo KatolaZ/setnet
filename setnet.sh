@@ -422,14 +422,15 @@ DEV_DNS2="208.67.220.220"
 DEVNAME=$1
 
 	exec 3>&1	
-	eval "${DIALOG}  --clear --form 'Set network for device: ${DEVNAME}'" \
+	eval "${DIALOG}  --clear --form 'Set network for device: ${DEVNAME}' \
 	${FORM_HEIGHT} ${FORM_WIDTH} 0 \
-	"IP"            1 1 "${DEV_IP}"    1 16 16 16 \
-	"Network"       2 1 "${DEV_NET}"    2 16 16 16 \
-	"Netmask"       3 1 "${DEV_NETMASK}"  3 16 16 16 \
-	"Gateway"       4 1 "${DEV_GW}"    4 16 16 16 \
-	"Primary DNS"   5 1 "${DEV_DNS1}" 5 16 16 16 \
-	"Secondary DNS" 6 1 "${DEV_DNS2}" 6 16 16 16 2> ${TMPFILE}
+	'IP'            1 1 '${DEV_IP}'    1 16 16 16 \
+	'Network'       2 1 '${DEV_NET}'    2 16 16 16 \
+	'Netmask'       3 1 '${DEV_NETMASK}'  3 16 16 16 \
+	'Gateway'       4 1 '${DEV_GW}'    4 16 16 16 \
+	'Primary DNS'   5 1 '${DEV_DNS1}' 5 16 16 16 \
+	'Secondary DNS' 6 1 '${DEV_DNS2}' 6 16 16 16 " \
+		 2> ${TMPFILE}
 
 	if [ $? -eq 1 ]; then 
 		eval "${DIALOG}  --infobox 'Configuration of ${DEVNAME} aborted' \
@@ -438,7 +439,8 @@ DEVNAME=$1
 	fi
 
 	read -d "*" DEV_IP DEV_NET DEV_NETMASK DEV_GW DEV_DNS1  DEV_DNS2 < ${TMPFILE}
-	eval "${DIALOG}  --msgbox 'Proposed configuration of ${DEVNAME}:\n ${DEV_IP}\n${DEV_NET}\n${DEV_NETMASK}\n${DEV_GW}\n${DEV_DNS1}\n${DEV_DNS2}'\
+	eval "${DIALOG}  --msgbox 'Proposed configuration of ${DEVNAME}:\n \
+${DEV_IP}\n${DEV_NET}\n${DEV_NETMASK}\n${DEV_GW}\n${DEV_DNS1}\n${DEV_DNS2}'\
 		${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
 	
 	## Configure IP
@@ -595,8 +597,8 @@ wifi_authenticate(){
 		    wpa_cli -i ${DEVNAME} remove_network ${NET_NUM} > ${TMPFILE}
 		    STATUS=$(cat ${TMPFILE})
 		    if [ "${STATUS}" != "OK" ]; then
-			      eval "${DIALOG}  --msgbox 'Error while removing existing network:\n$essid: {W_ESSID}'"
-			      ${INFO_HEIGHT} ${INFO_WIDTH}
+			      eval "${DIALOG}  --msgbox 'Error while removing existing \
+ network:\n$essid: {W_ESSID}'" ${INFO_HEIGHT} ${INFO_WIDTH}
 			      return
 		    fi
 	  fi
@@ -1060,7 +1062,7 @@ show_device_menu(){
 			       ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 8 \
 			       'View' 'View current configuration' \
 			       'Conf' 'Configure device' \
-		         'Start' 'Bring interface up' \
+                   'Start' 'Bring interface up' \
 			       'Stop' 'Put interface down' \
 			       'Restart' 'Restart interface'" 2> ${TMPFILE}
 		    
@@ -1425,14 +1427,12 @@ netdiag_ping(){
         return
     else
         PINGIP=$(cat ${TMPFILE})
-        ping -c 5 ${PINGIP} > ${TMPFILE} &
-        PINGPID=$!
-        eval "${DIALOG} --clear --title 'Ping ${PINGIP}'"\
-             "--tailbox ${TMPFILE} " \
-             ${LARGE_HEIGHT} ${LARGE_WIDTH}
-        if [ $? -ne 0 ];then
-            kill -9 ${PINGPID}
-        fi
+        ping -c 5 ${PINGIP} 2>&1  |\
+			eval "${DIALOG} --clear --title 'Ping ${PINGIP}' \
+                 --programbox  ${LARGE_HEIGHT} ${LARGE_WIDTH}" 2>${TMPFILE}
+        if [ $! -ne 0 ];then
+		 	log "netdiag_ping" "ping aborted"
+		fi
     fi
 
 }
@@ -1454,14 +1454,12 @@ netdiag_traceroute(){
         return
     else
         TRACEIP=$(cat ${TMPFILE})
-        traceroute ${TRACEIP} > ${TMPFILE} &
-        TRCPID=$!
-        eval "${DIALOG} --clear --title 'Traceroute ${TRACEIP}'"\
-             "--tailbox ${TMPFILE} " \
-             ${LARGE_HEIGHT} ${LARGE_WIDTH}
-        if [ $? -ne 0 ];then
-            kill -9 ${TRCPID}
-        fi
+        traceroute ${TRACEIP} 2>&1 | \
+			eval "${DIALOG} --clear --title 'Traceroute ${TRACEIP}' \
+                 --programbox  ${LARGE_HEIGHT} ${LARGE_WIDTH}" 2>${TMPFILE}
+        if [ $! -ne 0 ];then
+		 	log "netdiag_traceroute" "traceroute aborted"
+		fi
     fi
 }
 
@@ -1484,14 +1482,13 @@ netdiag_query(){
         return
     else
         QUERYIP=$(cat ${TMPFILE})
-        host ${QUERYIP} > ${TMPFILE} &
-        QUERYPID=$!
-        eval "${DIALOG} --clear --title 'host ${QUERYIP}'"\
-             "--tailbox ${TMPFILE} " \
-             ${LARGE_HEIGHT} ${LARGE_WIDTH}
-        if [ $? -ne 0 ];then
-            kill -9 ${QUERYPID}
-        fi
+        host ${QUERYIP} 2>&1 |\
+			eval "${DIALOG} --clear --title 'host ${QUERYIP}' \
+                 --programbox  ${LARGE_HEIGHT} ${LARGE_WIDTH}" 2>${TMPFILE}
+        if [ $! -ne 0 ];then
+		 	log "netdiag_ping" "host query aborted"
+		fi
+
     fi
 }
 
