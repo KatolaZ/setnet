@@ -29,7 +29,7 @@
 ## Initialisation
 ## 
 
-VERSION=0.2
+VERSION=0.2.1
 
 
 TOPSTR="setnet-${VERSION} [user: $(id -run)]"
@@ -121,7 +121,7 @@ load_setnetrc(){
 
 	WPA_FILE=""
 	LOGFILE=""
-	## If we were given a parameter, is the rc file to load...
+	## If we were given a parameter, that is the rc file to load...
 	##	
 	if [ $# -ge 1 ]; then
 		  . "$1"
@@ -148,8 +148,11 @@ load_setnetrc(){
      SETNETRC=~/.setnetrc
 	fi
 
-  . ${SETNETRC}
-
+	if [ -n "${SETNETRC}" ] &&
+	   [ -f "${SETNETRC}" ]; then 
+		. ${SETNETRC}
+	fi
+	
 	if [ -z ${WPA_FILE} ]; then
 		echo "Could not find WPA_FILE defined anywhere. Exiting"
 		exit 1
@@ -325,15 +328,15 @@ edit_file(){
 		    log "edit_file" "Copying ${TMPFILE} into ${FILEIN}"
 		    if cp "${TMPFILE}" "${FILEIN}"
 		    then
-			      eval "${DIALOG}   --clear --msgbox 'File ${FILEIN} saved successfully' \
+			      eval "${DIALOG}    --msgbox 'File ${FILEIN} saved successfully' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
 		    else
-			      eval "${DIALOG}   --clear --msgbox 'Error saving file ${FILEIN}' \
+			      eval "${DIALOG}    --msgbox 'Error saving file ${FILEIN}' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
 		    fi
 	  else
 		    log "edit_file" "Editing of ${FILEIN} aborted..."
-		    eval "${DIALOG}   --clear --msgbox 'File ${FILEIN} not saved' \
+		    eval "${DIALOG}    --msgbox 'File ${FILEIN} not saved' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 	  fi
 }
@@ -396,7 +399,7 @@ DEVNAME=$1
 
 	DEVCONF="${DEVCONF}\n== name servers ==\n$(grep '^nameserver' /etc/resolv.conf)"
 	
-	eval "${DIALOG}   --clear --title 'Current configuration of device: ${DEVNAME}' \
+	eval "${DIALOG}    --title 'Current configuration of device: ${DEVNAME}' \
 		--msgbox '\n\n${DEVCONF}' ${WINDOW_HEIGHT} ${WINDOW_WIDTH} "
 	return 0
 
@@ -405,26 +408,26 @@ DEVNAME=$1
 
 
 ##function 
-config_ethernet_static(){
+config_ip_static(){
 
-##local 
-DEV_IP="192.168.1.2"
-##local 
-DEV_NET="192.168.1.0"
-##local 
-DEV_NETMASK="255.255.255.0"
-##local 
-DEV_GW="192.168.1.1"
-##local 
-DEV_DNS1="208.67.222.222"
-##local 
-DEV_DNS2="208.67.220.220"
-
-##local 
-DEVNAME=$1
-
+	##local 
+	DEV_IP="192.168.1.2"
+	##local 
+	DEV_NET="192.168.1.0"
+	##local 
+	DEV_NETMASK="255.255.255.0"
+	##local 
+	DEV_GW="192.168.1.1"
+	##local 
+	DEV_DNS1="208.67.222.222"
+	##local 
+	DEV_DNS2="208.67.220.220"
+	
+	##local 
+	DEVNAME=$1
+	
 	exec 3>&1	
-	eval "${DIALOG}  --clear --form 'Set network for device: ${DEVNAME}' \
+	eval "${DIALOG}   --form 'Set network for device: ${DEVNAME}' \
 	${FORM_HEIGHT} ${FORM_WIDTH} 0 \
 	'IP'            1 1 '${DEV_IP}'    1 16 16 16 \
 	'Network'       2 1 '${DEV_NET}'    2 16 16 16 \
@@ -440,9 +443,10 @@ DEVNAME=$1
 		return
 	fi
 
-	read -d "*" DEV_IP DEV_NET DEV_NETMASK DEV_GW DEV_DNS1  DEV_DNS2 < ${TMPFILE}
+	read -d "*" DEV_IP DEV_NET DEV_NETMASK DEV_GW DEV_DNS1 DEV_DNS2 < ${TMPFILE}
 	eval "${DIALOG}  --msgbox 'Proposed configuration of ${DEVNAME}:\n \
-${DEV_IP}\n${DEV_NET}\n${DEV_NETMASK}\n${DEV_GW}\n${DEV_DNS1}\n${DEV_DNS2}'\
+IP: ${DEV_IP}\nNetwork: ${DEV_NET}\nNetmask: ${DEV_NETMASK}\nGateway: \
+${DEV_GW}\nDNS1: ${DEV_DNS1}\nDNS2: ${DEV_DNS2}'\
 		${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
 	
 	## Configure IP
@@ -453,23 +457,27 @@ ${DEV_IP}\n${DEV_NET}\n${DEV_NETMASK}\n${DEV_GW}\n${DEV_DNS1}\n${DEV_DNS2}'\
 	ip address add "${DEV_IP}/${DEV_NETMASK}" dev "${DEVNAME}"
 	
 	## Configure GW
-	ip route flush dev "${DEVNAME}"
-	ip route add "${DEV_NET}/${DEV_NETMASK}" dev "${DEVNAME}"
-	ip route add default via "${DEV_GW}"
-	
+	#if [ -n "${DEV_GW}" ]; then 
+		ip route flush dev "${DEVNAME}"
+		ip route add "${DEV_NET}/${DEV_NETMASK}" dev "${DEVNAME}"
+		ip route add default via "${DEV_GW}"
+	#fi
 	## Configure DNS
-	mv /etc/resolv.conf /etc/resolv.conf.bak
-	if [ -n "${DEV_DNS1}" ]; then
-		echo "nameserver ${DEV_DNS1}" >> /etc/resolv.conf
-	fi
-	if [ -n "${DEV_DNS2}" ]; then
-		echo "nameserver ${DEV_DNS2}" >> /etc/resolv.conf
-	fi
-	show_device_conf "${DEVNAME}"
+	#if [ -n "${DEV_DNS1}" ] ||
+	#	   [ -n "${DEV_DNS1}" ]; then
+		mv /etc/resolv.conf /etc/resolv.conf.bak
+		if [ -n "${DEV_DNS1}" ]; then
+			echo "nameserver ${DEV_DNS1}" >> /etc/resolv.conf
+		fi
+		if [ -n "${DEV_DNS2}" ]; then
+			echo "nameserver ${DEV_DNS2}" >> /etc/resolv.conf
+		fi
+		show_device_conf "${DEVNAME}"
+	#fi
 }
 
 ##function 
-config_ethernet_dhcp(){
+config_ip_dhcp(){
 
 ##local 
 	DEVNAME=$1
@@ -477,40 +485,37 @@ config_ethernet_dhcp(){
 	##eval "${DIALOG}  --msgbox 'Running \"dhclient ${DEVNAME}\"' ${INFO_HEIGHT} ${INFO_WIDTH}"
 	dhclient -r ${DEVNAME}  2>/dev/null
 	dhclient -v ${DEVNAME} 2>&1 |
-		eval "${DIALOG} --clear --title 'Running dhclient...' \
+		eval "${DIALOG}  --title 'Running dhclient ${DEVNAME}' \
                  --programbox  ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" 2>${TMPFILE}
     if [ $! -ne 0 ];then
-		log "config_ethernet_dhcp" "dhclient aborted"
+		log "config_ip_dhcp" "dhclient aborted"
 	fi
 	show_device_conf ${DEVNAME}
 }
 
 
 ##function 
-config_ethernet(){
+configure_ip_address(){
 
 ##local 
     DEVNAME=$1
 	  
-    while true; do
-		    eval "${DIALOG}  --clear --cancel-label 'Up' \
+	eval "${DIALOG}   --cancel-label 'Up' \
 		--menu 'Configuring ${DEVNAME}' ${INFO_HEIGHT} ${INFO_WIDTH} 4 \
 		'DHCP' ''\
 		'Static' ''" 2>${TMPFILE}
-		    if [ $? -eq 1 ]; then
-			      return
-		    fi
-		    ACTION=$(cat ${TMPFILE})
-		    case ${ACTION} in
-			      "Static")
-				        config_ethernet_static ${DEVNAME}
-				        ;;
-			      "DHCP")
-				        config_ethernet_dhcp ${DEVNAME}
-				        ;;
-		    esac
-	  done
-    
+	if [ $? -eq 1 ]; then
+		return
+	fi
+	ACTION=$(cat ${TMPFILE})
+	case ${ACTION} in
+		"Static")
+			config_ip_static ${DEVNAME}
+			;;
+		"DHCP")
+			config_ip_dhcp ${DEVNAME}
+			;;
+	esac
 }
 
 ##function 
@@ -623,7 +628,7 @@ wifi_authenticate(){
 			      eval "${DIALOG}  --insecure --inputbox 'Please insert WPA PSK\n(8 characters)' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
 			      if [ $? -eq 1 ]; then
-				        eval "${DIALOG}  --clear --msgbox 'Network configuration aborted!!!' \
+				        eval "${DIALOG}   --msgbox 'Network configuration aborted!!!' \
 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
 				        return 1
 			      fi
@@ -638,7 +643,7 @@ wifi_authenticate(){
 		    wpa_cli -i ${DEVNAME} set_network ${NET_NUM} psk \"${PSK}\"
 		    ## remove the password from tmpfile
 		    echo "" > ${TMPFILE}
-		    eval "${DIALOG}  --clear --defaultno --yesno \
+		    eval "${DIALOG}   --defaultno --yesno \
 			   'Network \"${W_ESSID}\" added\nSave configuration file?' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH} " 2> ${TMPFILE}
 		    if [ $? -eq 0 ]; then
@@ -660,7 +665,7 @@ wifi_authenticate(){
 		    log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
 		    wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
 		    wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt NONE
-		    eval "${DIALOG}  --clear --defaultno --yesno \
+		    eval "${DIALOG}   --defaultno --yesno \
 			   'Network \"${W_ESSID}\" added\nSave configuration file?' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH} " 2> ${TMPFILE}
 		    if [ $? -eq 0 ]; then
@@ -763,7 +768,7 @@ wifi_remove(){
 		    NETNUM=$(cat ${TMPFILE})
 		    WPA_STATUS=$(wpa_cli -i ${DEVNAME} remove_network ${NETNUM} | tail -1 )
 		    if [ "${WPA_STATUS}" = "OK" ]; then
-			      eval "${DIALOG}  --clear --defaultno --yesno \
+			      eval "${DIALOG}   --defaultno --yesno \
 				   'Network ${NETNUM} removed\nSave configuration file?' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}" 2> ${TMPFILE}
 			      if [ $? -eq 0 ]; then
@@ -773,12 +778,12 @@ wifi_remove(){
 			      
 			      return
 		    else
-			      eval "${DIALOG}  --clear --msgbox 'Network ${NETNUM} NOT removed' \
+			      eval "${DIALOG}   --msgbox 'Network ${NETNUM} NOT removed' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
 			      return
 		    fi
 	  else
-		    eval "${DIALOG}  --clear --msgbox 'No network removed!!!' \
+		    eval "${DIALOG}   --msgbox 'No network removed!!!' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 		    return
 	  fi
@@ -800,16 +805,16 @@ sed -r -e 's/^\ +//g' | cut -d " " -f 1)
 	  log "wifi_restart_wpa" "WPA_PID: ${WPA_PID}"
 	  kill -9 ${WPA_PID}
     
-	  wpa_supplicant -B -i ${DEVNAME} -c ${WPA_FILE} -P${WPA_PIDFILE} 2>/dev/null
+	  wpa_supplicant -B -i ${DEVNAME} -c ${WPA_FILE} -P${WPA_PIDFILE} 2>&1 >/dev/null
 	  WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME}" | \
                      sed -r -e 's/^\ +//g' | cut -d " " -f 1 )
 	  WPA_PID_SAVED=$(cat ${WPA_PIDFILE})
     log "wifi_restart_wpa" "WPA_PID: ${WPA_PID} WPA_PID_SAVED: ${WPA_PID_SAVED}"
 	  if [ -n "${WPA_PID}" ] &&  [ "${WPA_PID}" != "${WPA_PID_SAVED}" ]; then
-		    eval "${DIALOG}  --clear --msgbox 'Error restarting wpa_supplicant' \
+		    eval "${DIALOG}   --msgbox 'Error restarting wpa_supplicant' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 	  else
-		    eval "${DIALOG}  --clear --msgbox 'wpa_supplicant restarted successfully' \
+		    eval "${DIALOG}   --msgbox 'wpa_supplicant restarted successfully' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 	  fi
     
@@ -839,17 +844,17 @@ wifi_enable(){
 		    NETNUM=$(cat ${TMPFILE})
 		    WPA_STATUS=$(wpa_cli -i ${DEVNAME} enable ${NETNUM} | tail -1 )
 		    if [ "${WPA_STATUS}" = "OK" ]; then
-			      eval "${DIALOG}  --clear --msgbox 'Network ${NETNUM} enabled' \
+			      eval "${DIALOG}   --msgbox 'Network ${NETNUM} enabled' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
-			      config_ethernet ${DEVNAME}
+			      #config_ethernet ${DEVNAME}
 			      return
 		    else
-			      eval "${DIALOG}  --clear --msgbox 'Network ${NETNUM} NOT enabled' \
+			      eval "${DIALOG}   --msgbox 'Network ${NETNUM} NOT enabled' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
 			      return
 		    fi
 	  else
-		    eval "${DIALOG}  --clear --msgbox 'No network enabled!!!' \
+		    eval "${DIALOG}   --msgbox 'No network enabled!!!' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 		    return
 	  fi
@@ -871,16 +876,16 @@ wifi_disable(){
 		    NETNUM=$(cat ${TMPFILE})
 		    WPA_STATUS=$(wpa_cli -i ${DEVNAME} disable ${NETNUM} | tail -1 )
 		    if [ "${WPA_STATUS}" = "OK" ]; then
-			      eval "${DIALOG}  --clear --msgbox 'Network ${NETNUM} disabled' \
+			      eval "${DIALOG}   --msgbox 'Network ${NETNUM} disabled' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
 			      return
 		    else
-			      eval "${DIALOG}  --clear --msgbox 'Network ${NETNUM} NOT disabled' \
+			      eval "${DIALOG}   --msgbox 'Network ${NETNUM} NOT disabled' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
 			      return
 		    fi
 	  else
-		    eval "${DIALOG}  --clear --msgbox 'No network disabled!!!' \
+		    eval "${DIALOG}   --msgbox 'No network disabled!!!' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 		    return
 	  fi
@@ -915,7 +920,7 @@ wifi_load_file(){
 			if [ $? -eq 0 ]; then
 				SEL_FILE=$(cat ${TMPFILE})
 			else
-				eval "${DIALOG}  --clear --msgbox 'WPA_FILE was not modified' \
+				eval "${DIALOG}   --msgbox 'WPA_FILE was not modified' \
 						   ${INFO_HEIGHT} ${INFO_WIDTH}"
 				return
 			fi
@@ -923,19 +928,19 @@ wifi_load_file(){
 		
 		if [ -f "${SEL_FILE}" ]; then
 			WPA_FILE=${SEL_FILE}
-			eval "${DIALOG}  --clear --defaultno --yesno \
+			eval "${DIALOG}   --defaultno --yesno \
 					   'WPA_FILE changed to ${WPA_FILE}\nRestart wpa_supplicant?' \
 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
 			if [ $? -eq 0 ]; then
 				wifi_restart_wpa ${DEVNAME} ${WPA_FILE}
 			fi
 		else
-			eval "${DIALOG}  --clear --msgbox 'Invalid file name!\n WPA_FILE *not* changed' \
+			eval "${DIALOG}   --msgbox 'Invalid file name!\n WPA_FILE *not* changed' \
 					  ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
 			return 
 		fi
 	else
-		eval "${DIALOG}  --clear --msgbox 'WPA_FILE was not modified' \
+		eval "${DIALOG}   --msgbox 'WPA_FILE was not modified' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
 	fi
 	
@@ -950,7 +955,7 @@ config_wifi(){
     DEVNAME=$1
 	  
     while true; do
-		    eval "${DIALOG}  --clear --cancel-label 'Up' \
+		    eval "${DIALOG}   --cancel-label 'Up' \
 			   --menu 'Configuring ${DEVNAME}\n(Current file: ${WPA_FILE})' \
 			   ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 12 \
 			   'Restart' 'Restart wpa_supplicant' \
@@ -1010,24 +1015,37 @@ config_wifi(){
 
 
 ##
-## (Re)-Configure a network device
+## (Re)-Configure 
 ##
 
 ##function 
-configure_device(){
+configure_wifi(){
 
 ##local 
     DEVNAME=$1
 
-    ## Check if the network device is a wifi -- this should be more robust...
-    iw ${DEVNAME} info 2>&1 >/dev/null
-    
-	case $? in
-		0)
+	## Automatically Check if the network device is a wifi -- this
+	## should be robust...
+	! iw ${DEVNAME} info 2>&1 >/dev/null
+	IS_WIFI=$?
+	log "configure_device" "Device ${DEVNAME} -- IS_WIFI: ${IS_WIFI} (automatic)"
+	if [ "${IS_WIFI}" = "0" ] && \
+		   [ -n "${WIFI_DEVICES}" ]; then 
+		## WIFI_DEVICES is set, hence we check whether the current
+		## device is in the list 
+		IS_WIFI=$(echo " ${WIFI_DEVICES} " | grep -E -c "(\ ${DEVNAME}\ )")
+		log "configure_device" "Device ${DEVNAME} -- IS_WIFI: ${IS_WIFI} (config file)"
+	fi
+	
+	
+	case ${IS_WIFI} in
+		1)
 			config_wifi ${DEVNAME}
 			;;
 		*)
-			config_ethernet ${DEVNAME}
+			## Show a message here
+			eval "${DIALOG} --msgbox '${DEVNAME} is not a WiFi device... ' \
+            ${INFO_HEIGHT} ${INFO_WIDTH}" 
 			;;
 	esac
 	
@@ -1063,11 +1081,12 @@ show_device_menu(){
     while true; do 	
         DEV_STATUS=$(ip -o link | cut -d " " -f 2,9 | grep -E "^${DEVNAME}: " | cut -d " " -f 2)
         log "show_device_menu" "DEVNAME: ${DEVNAME} DEV_STATUS: ${DEV_STATUS}"
-		    eval "${DIALOG}  --clear --cancel-label 'Up' --menu\
+		    eval "${DIALOG}   --cancel-label 'Up' --menu\
              'Device: ${DEVNAME}\nStatus: ${DEV_STATUS}' \
 			       ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 8 \
 			       'View' 'View current configuration' \
-			       'Conf' 'Configure device' \
+			       'Conf' 'Configure IP Address' \
+                   'WiFi' 'Manage WiFi networking' \
                    'Start' 'Bring interface up' \
 			       'Stop' 'Put interface down' \
 			       'Restart' 'Restart interface'" 2> ${TMPFILE}
@@ -1082,7 +1101,10 @@ show_device_menu(){
 				        show_device_conf ${DEVNAME}
 				        ;;
 			      "Conf")
-				        configure_device ${DEVNAME}
+				        configure_ip_address ${DEVNAME}
+				        ;;
+			      "WiFi")
+				        configure_wifi ${DEVNAME}
 				        ;;
 			      "Start")
 				        set_device_up ${DEVNAME}
@@ -1118,7 +1140,7 @@ show_devs() {
 		    fi
 	  done
     
- 	  eval "${DIALOG}  --clear --cancel-label 'Up' \
+ 	  eval "${DIALOG}   --cancel-label 'Up' \
 			   --menu 'Select Interface to configure' ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 4 \
 			   ${DEVICE_TAGS}" 2> ${TMPFILE}
 	  return $?
@@ -1165,7 +1187,7 @@ Please report bugs at:
     https://git.devuan.org/KatolaZ/setnet
 
 EOF
-	eval "${DIALOG}  --clear --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
+	eval "${DIALOG}   --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
 	return
 }
 
@@ -1185,7 +1207,7 @@ show_copyright(){
 
 
 EOF
-	eval "${DIALOG}  --clear --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
+	eval "${DIALOG}   --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
 	return
 }
 
@@ -1218,7 +1240,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------
 
 EOF
-	eval "${DIALOG}  --clear --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
+	eval "${DIALOG}   --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
 	return
 }
 
@@ -1259,7 +1281,7 @@ notfound(){
     CMDNAME=$1
 
     
-    eval "${DIALOG} --clear --msgbox 'Sorry! Commmand ${CMDNAME} not found!'" \
+    eval "${DIALOG}  --msgbox 'Sorry! Commmand ${CMDNAME} not found!'" \
          ${INFO_HEIGHT} ${INFO_WIDTH}
     
 }
@@ -1282,7 +1304,7 @@ netdiag_DNS(){
     NAMESERVERS=$(grep '^nameserver' /etc/resolv.conf)
     MSG_STR="Configured name servers in /etc/resolv.conf ==\n\n${NAMESERVERS}"
 
-    eval "${DIALOG} --clear --title 'DNS servers' --msgbox '${MSG_STR}' "\
+    eval "${DIALOG}  --title 'DNS servers' --msgbox '${MSG_STR}' "\
          ${WINDOW_HEIGHT} ${WINDOW_WIDTH}
     
 }
@@ -1303,7 +1325,7 @@ netdiag_resolver(){
     ## Dump to dialog
     RESOLVER=$(grep -v '^#' /etc/nsswitch.conf)
 
-    eval "${DIALOG} --clear --title 'Resolver configuration (/etc/nsswitch.conf)' \
+    eval "${DIALOG}  --title 'Resolver configuration (/etc/nsswitch.conf)' \
           --msgbox '${RESOLVER}' "\
          ${WINDOW_HEIGHT} ${WINDOW_WIDTH}
     
@@ -1331,7 +1353,7 @@ netdiag_routes(){
     ## Dump to dialog
     ROUTES=$(netstat -rn > ${TMPFILE} )
     
-    eval "${DIALOG} --clear --no-collapse --title 'Routing table (netstat -rn) [arrows to scroll]'" \
+    eval "${DIALOG}  --no-collapse --title 'Routing table (netstat -rn) [arrows to scroll]'" \
          "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
          ${LARGE_HEIGHT} ${LARGE_WIDTH}
 }
@@ -1352,7 +1374,7 @@ netdiag_ARP(){
     # Dump to dialog
     ARP=$(cat /proc/net/arp >${TMPFILE})
 
-    eval "${DIALOG} --clear --no-collapse --title 'ARP table (/proc/net/arp) [arrows to scroll]'" \
+    eval "${DIALOG}  --no-collapse --title 'ARP table (/proc/net/arp) [arrows to scroll]'" \
          "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
          ${LARGE_HEIGHT} ${LARGE_WIDTH}
 }
@@ -1380,7 +1402,7 @@ netdiag_connections(){
     ## Dump to dialog
     SERV=$(netstat -tnp | sed -r -e 's/$/\n/g' > ${TMPFILE})
     
-    eval "${DIALOG} --clear --no-collapse "\
+    eval "${DIALOG}  --no-collapse "\
          " --title 'Active network connections (netstat -tnp) [arrows to scroll]'" \
          "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
          ${LARGE_HEIGHT} ${LARGE_WIDTH}
@@ -1409,7 +1431,7 @@ netdiag_services(){
 
     SERV=$(netstat -ltnp | sed -r -e 's/$/\n/g' > ${TMPFILE})
     
-    eval "${DIALOG} --clear --no-collapse "\
+    eval "${DIALOG}  --no-collapse "\
          " --title 'Active network services (netstat -ltnp) [arrows to scroll]'" \
          "--tab-correct --tab-len 4 --textbox ${TMPFILE} "\
          ${LARGE_HEIGHT} ${LARGE_WIDTH}
@@ -1419,7 +1441,7 @@ netdiag_services(){
 ##function
 netdiag_ping(){
     
-    HAS_PING=$(echo ${HAS_OPTS} | grep -c " ping ")
+    HAS_PING=$(echo ${HAS_OPTS} | grep -E -c "\ ping\ ")
     if [ ${HAS_PING} -ne 1 ]; then
         notfound "ping"
         return
@@ -1428,13 +1450,13 @@ netdiag_ping(){
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
 
     if [ $? -ne 0 ]; then
-       	eval "${DIALOG}  --clear --msgbox 'Ping Aborted' \
+       	eval "${DIALOG}   --msgbox 'Ping Aborted' \
 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
         return
     else
         PINGIP=$(cat ${TMPFILE})
         ping -c 5 ${PINGIP} 2>&1  |\
-			eval "${DIALOG} --clear --title 'Ping ${PINGIP}' \
+			eval "${DIALOG}  --title 'Ping ${PINGIP}' \
                  --programbox  ${LARGE_HEIGHT} ${LARGE_WIDTH}" 2>${TMPFILE}
         if [ $! -ne 0 ];then
 		 	log "netdiag_ping" "ping aborted"
@@ -1455,13 +1477,13 @@ netdiag_traceroute(){
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
 
     if [ $? -ne 0 ]; then
-       	eval "${DIALOG}  --clear --msgbox 'Traceroute Aborted' \
+       	eval "${DIALOG}   --msgbox 'Traceroute Aborted' \
 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
         return
     else
         TRACEIP=$(cat ${TMPFILE})
         traceroute ${TRACEIP} 2>&1 | \
-			eval "${DIALOG} --clear --title 'Traceroute ${TRACEIP}' \
+			eval "${DIALOG}  --title 'Traceroute ${TRACEIP}' \
                  --programbox  ${LARGE_HEIGHT} ${LARGE_WIDTH}" 2>${TMPFILE}
         if [ $! -ne 0 ];then
 		 	log "netdiag_traceroute" "traceroute aborted"
@@ -1471,7 +1493,7 @@ netdiag_traceroute(){
 
 
 ##function
-netdiag_query(){
+netdiag_lookup(){
 
     HAST_HOST=$(echo ${HAS_OPTS} | grep -c " host ")
     if [ $? -ne 1 ]; then
@@ -1479,20 +1501,20 @@ netdiag_query(){
         return
     fi
 
-    eval "${DIALOG} --insecure --inputbox 'Hostname or IP to query:' \
+    eval "${DIALOG} --insecure --inputbox 'Hostname or IP to lookup:' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
     
     if [ $? -ne 0 ]; then
-       	eval "${DIALOG}  --clear --msgbox 'DNS query aborted' \
+       	eval "${DIALOG}   --msgbox 'DNS lookup aborted' \
 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
         return
     else
         QUERYIP=$(cat ${TMPFILE})
         host ${QUERYIP} 2>&1 |\
-			eval "${DIALOG} --clear --title 'host ${QUERYIP}' \
+			eval "${DIALOG}  --title 'host ${QUERYIP}' \
                  --programbox  ${LARGE_HEIGHT} ${LARGE_WIDTH}" 2>${TMPFILE}
         if [ $! -ne 0 ];then
-		 	log "netdiag_ping" "host query aborted"
+		 	log "netdiag_ping" "host lookup aborted"
 		fi
 
     fi
@@ -1526,8 +1548,8 @@ netdiag_menu(){
 			   'ARP' 'Show ARP table'  \
          'Connections' 'List active network connections' \
 			   'DNS' 'List DNS servers' \
+         'Lookup' 'DNS Lookup' \
          'Ping' 'Ping a host'  \
-         'Query' 'DNS Query' \
          'Resolver' 'Show resolver configuration' \
 			   'Routes' 'Show routing table' \
          'Services' 'List active network daemons'  \
@@ -1551,8 +1573,8 @@ netdiag_menu(){
             "Ping")
 				        netdiag_ping
 				        ;;
-            "Query")
-                netdiag_query
+            "Lookup")
+                netdiag_lookup
                 ;;
 			      "Resolver")
 				        netdiag_resolver
@@ -1592,7 +1614,7 @@ dump_file(){
 			      if [ $? -eq 0 ]; then
 				        SEL_FILE=$(cat ${TMPFILE})
 			      else
-				        eval "${DIALOG}  --clear --msgbox 'Dump aborted' \
+				        eval "${DIALOG}   --msgbox 'Dump aborted' \
 						   ${INFO_HEIGHT} ${INFO_WIDTH}"
 				        return
 			      fi
@@ -1608,11 +1630,11 @@ dump_file(){
             eval "netdiag_${c} \"${DUMPFILE}\""
         done
 	  else
-		    eval "${DIALOG}  --clear --msgbox 'Dump aborted' \
+		    eval "${DIALOG}   --msgbox 'Dump aborted' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"
         return
 	  fi
-		eval "${DIALOG}  --clear --msgbox 'Status dumped to ${DUMPFILE}' \
+		eval "${DIALOG}   --msgbox 'Status dumped to ${DUMPFILE}' \
 						   ${INFO_HEIGHT} ${INFO_WIDTH}"
 }
 
@@ -1626,7 +1648,7 @@ dump_pastebin(){
 ##function 
 dump_menu(){
 
-    eval "${DIALOG} --clear --checklist 'Select conf to dump' \
+    eval "${DIALOG}  --checklist 'Select conf to dump' \
              ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 10 \
              'ARP' 'ARP table' on \
              'devices' 'Device configuration' on \
@@ -1641,7 +1663,7 @@ dump_menu(){
     
     DUMP_CONF=$(cat ${TMPFILE})
     
-    eval "${DIALOG} --clear --cancel-label 'Up' \
+    eval "${DIALOG}  --cancel-label 'Up' \
            --menu 'Dump configuration to:' \
            ${INFO_HEIGHT} ${INFO_WIDTH} 6 \
            'File' 'Dump to file' \
@@ -1667,7 +1689,7 @@ dump_menu(){
 show_toplevel(){
 
     log "show_toplevel" "TMPFILE: ${TMPFILE}"
-	  eval "${DIALOG} --clear --cancel-label 'Quit' --menu 'Main Menu' \
+	  eval "${DIALOG}  --cancel-label 'Quit' --menu 'Main Menu' \
 		   ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 6 \
 		   'Setup' 'Setup interfaces' \
        'Info' 'Network diagnostics' \
@@ -1717,7 +1739,7 @@ show_disclaimer(){
       Copyleft (C) KatolaZ (katolaz@freaknet.org) 
                     2016, 2017
 
-     -+- This is an alpha release of setnet.sh -+-
+      -+- This is a beta release of setnet.sh -+-
    
                  THIS IS FREE SOFTWARE
         YOU CAN USE AND DISTRIBUTE IT UNDER THE 
@@ -1732,7 +1754,7 @@ show_disclaimer(){
            your right and distribution terms
 EOF
 
-	eval "${DIALOG}  --clear --cr-wrap --textbox ${TMPFILE} 23 60"
+	eval "${DIALOG}   --cr-wrap --textbox ${TMPFILE} 23 60"
 	return
 }
 
@@ -1777,7 +1799,7 @@ initialise(){
 ##function
 log_show(){
     
-    eval "${DIALOG} --clear --cr-wrap --title 'setnet log file (${LOGFILE})'\
+    eval "${DIALOG}  --cr-wrap --title 'setnet log file (${LOGFILE})'\
     --textbox ${LOGFILE} \
     ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" 
     

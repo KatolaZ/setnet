@@ -1,0 +1,232 @@
+.\" The following requests are required for all man pages.
+.Dd January 06, 2017
+.Dt SETNET 8 SMM
+.Os Linux
+.Sh NAME
+.Nm setnet.sh
+.Nd minimalist shell script for network configuration with dialog interface
+.Sh SYNOPSIS
+.Nm setnet.sh
+.Op Fl c Ar config_file
+.Op Fl h
+.Op Fl v
+.Sh DESCRIPTION
+.Pp
+setnet.sh is a shell script for network management, with a terminal
+user interface based on dialog(1). It works as a wrapper around the
+basic tools for the configuration of Ethernet and Wi-Fi interfaces,
+including ip(8), dhclient(8), and wpa_cli(8).
+
+.Pp
+setnet.sh allows to configure static and/or DHCP-based connections to
+a LAN/WLAN, and to manage the authentication to a Wi-Fi network. At
+present, only open authentication (no key) and WPA-Personal
+authentication (WPA-PSK/WPA2-PSK) are supported. The support for basic
+WPA-Enterprise authentication (WPA-EAP-PEAP and WPA-EAP-TLS) is under
+development.
+
+.Pp
+setnet.sh can be also used as a minimal interface to basic network
+diagnostics tools, including ping(8), host(1), traceroute(1), and
+netstat(8). It allows to show some information about network status,
+including the routing table, content of resolv.conf and nsswitch.conf,
+active TCP/IP connections, running daemons, etc., and to dump those
+information to a file. Support for posting a dump of network status to
+websites like pastebin.com is under development.
+
+.Pp
+setnet.sh recognises the following options:
+
+.Bl -tag -width Ds
+.It Fl c Ar config_file
+specify a configuration file
+.It Fl h
+print a minimal help and exit
+.It Fl v
+show version and exit
+.El
+
+.Pp
+The main setnet.sh menu allows to choose from five sections, as
+described below:
+
+.Bl -tag -width Ds
+.It Ic Setup
+This section allows to configure a network interface, selected from
+the list of available network devices (as returned by "ip -o
+link"). Once a device has been selected, it is possible to choose on
+of the following functions
+.Bl -tag -width 
+.It Ic View
+View current device configuration, i.e., MAC address, link status, IP
+address, etc.
+.It Ic WiFi
+(available only for wi-fi devices) Manage the association to a Wi-Fi
+network. This allows to restart wpa_supplicant, to manage the
+currently configured networks, to add a new network, and to show (and
+modify) the configuration file used by wpa_supplicant.
+.It Ic Conf 
+Configure the IP address of the device. It is possible to choose
+between
+.Em DHCP-based
+and
+.Em Static
+IP configuration.
+.It Ic Start
+Bring the interface up (using "ip link set <DEVNAME> up").
+.It Ic Stop
+Bring the interface down (using "ip link set <DEVNAME> down").
+.It Ic Restart
+Restart the interface by putting it first down and then up again.
+.El
+.It Ic Info
+This section provides information about the current network status and
+allows to perform basic diagnostic tasks. The following functions are
+available:
+.Bl -tag -width 
+.It Ic ARP
+Show the current ARP table
+.It Ic Connections
+List active network connections by running "netstat -tnp"
+.It Ic DNS
+List the configured DNS, by showing the "nameserver" entries in
+.Pa /etc/resolv.conf.
+.It Ic Lookup
+Perform a DNS lookup through "host <HOST>". If <HOST> is a FQDN, the
+result will be the IP address(es) associated to that domain name. If
+<HOST> is an IP address, the result is the list of FQDNs associated to
+that address.
+.It Ic Ping
+Ping a host, using its IP of FQDN (Fully-Qualified Domain Name) by
+running "ping -c 5 <HOST>".
+.It Ic Resolver
+Show the system resolver configuration, i.e. the content of the file
+.Pa /etc/nsswitch.conf
+.It Ic Routes
+Show the current routing table
+.It Ic Services
+Show a list of processes (daemons) listening on TCP ports, by running
+"netstat -ltnp".
+.It Ic Traceroute
+Show the route to a given host, as obtained by running the command
+"traceroute <HOST>".
+.El
+.It Ic Dump
+Dump information about current network status to a file. The user can
+choose which information to include from a checklist. The support for
+dumping network information to web applications like
+.Em pastebin
+is currently under development.
+.It Ic Log
+Show the logfile written by setnet.sh
+.It Ic About
+Provide information about copyright, contributors, and license.
+.El
+
+
+
+.\" This next request is for sections 1, 6, 7 & 8 only
+.Sh ENVIRONMENT
+.Pp
+setnet.sh uses the following environment variables:
+.Bl -tag -width Ds
+.It Ev WPA_FILE
+The configuration file for wpa_supplicant(1) (default to
+.Pa /etc/wpa_supplicant/wpa_setnet.conf
+.Li ).
+.It Ev LOGFILE
+The file used by setnet.sh for logging  (default to
+.Pa /var/log/setnet.log
+.Li ). 
+.It Ev TRUNCATE_LOG
+If it is set to "yes" or "YES", the log file is truncated when
+setnet.sh starts.
+.It Ev WIFI_DEVICES
+List of wifi devices. This list is used only when automatic detection
+of wifi devices fails.
+.El
+
+These variables are normally set in the setnetrc configuration file
+(see
+.Sy FILES
+below). setnet.sh will exit if either
+.Ev WPA_FILE
+or
+.Ev LOGFILE
+are undefined.
+
+.Sh FILES
+setnet.sh uses a configuration file which defines the environment
+variables described in
+.Sy ENVIRONMENT
+above. setnet.sh looks for the following files:
+
+.Bl -bullet -offset indent
+.It
+the
+.Em config_file
+provided through the option
+.Sy -c
+(if any).
+.It
+the file
+.Em /etc/setnetrc
+(if it exists)
+.It
+the file
+.Em ~/.setnetrc
+(if it exists)
+.El
+
+in that order. If a
+.Em config_file
+is provided, the other files are ignored. Otherwise, if 
+.Em ~/.setnetrc
+exists, it takes precedence over
+.Em /etc/setnetrc.
+
+
+.\" .Sh EXAMPLES
+.\" This next request is for sections 1, 6, 7 & 8 only
+.\"     (command return values (to shell) and
+.\"       fprintf/stderr type diagnostics)
+.\" .Sh DIAGNOSTICS
+.Sh SEE ALSO
+ip(8), dhclient(8), wpa_supplicant(8), wpa_cli(8), netstat(8).
+.\" .Sh CONFORMING TO
+.\" .Sh HISTORY
+.Sh AUTHORS
+setnet.sh is Free Software, distributed under the terms of the GNU
+General Public License (GPL), version 3 of the License.
+.Pp
+setnet.sh is copyleft (c) by
+.An Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+
+.Sh BUGS
+At present, setnet.sh can reliably manage no more than one Wi-Fi
+device at a time. This is due to the fact that the configuration file
+for wpa_supplicant is defined in the environment variable
+.Ev WPA_FILE.
+There is no limitation on the number of Ethernet devices that
+setnet.sh can manage, but you should be careful with having more than
+one 
+.Sy dhclient
+processes running, since each of them will try to add a default
+gateway to the kernel routing table. 
+
+
+.Sh SECURITY CONSIDERATIONS
+Configuring networking is an administration task, and setnet.sh
+requires root privileges to work properly. It is possible to allow a
+regular user to run setnet.sh, e.g. by using sudo(8) or sup(1) (see
+https://sup.dyne.org/ for more information about sup).
+
+.Pp
+setnet.sh can recognise if it is running under sudo(8) or sup(1), by
+looking at the content of the environment variables SUDO_UID/SUP_UID,
+SUDO_GID/SUP_GID, and SUDO_USER/SUP_USER. When setnet.sh is run under
+sudo(8) or sup(1), some functionalities are disabled. In particular,
+loading and editing an alternate wpa_supplicant configuration file is
+forbidden (and for obvious reasons, since this would in principle
+allow the sudoer to edit *any* file in your system).
+
