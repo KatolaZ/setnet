@@ -1,0 +1,11 @@
+2017-01-07  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh (configure_device): Improved wifi detection
+		* (netdiag_ping), (netdiag_traceroute),(netdiag_query):
+			changed dialog to programbox
+		* solved viasualitation bug in ip config
+		* added a manpage
+		* Added configuration variable "WIFI_DEVICES"
+		* The "Setup interface" menu has been reorganised
+			* added "Config IP Address" and "Manage Wifi Networking"
+

@@ -25,4 +25,4 @@ TRUNCATE_LOG="yes"
 ## detection fails
 ##
 
-##WIFI_DEVICES="wlan1 wlan4"
+##WIFI_DEVICES="wlan1 wlan3"
