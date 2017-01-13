@@ -33,7 +33,7 @@ VERSION=0.2.1
 
 
 TOPSTR="setnet-${VERSION} [user: $(id -run)]"
-DIALOG="dialog --backtitle \"${TOPSTR}\" "
+DIALOG="dialog --backtitle \"${TOPSTR}\" --clear "
 
 
 ###############################
