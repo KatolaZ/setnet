@@ -321,6 +321,39 @@ check_sudo(){
 
 }
 
+##
+## Check the output of a command provided as argument against an
+## expected output
+##
+##function
+chk_out(){
+	
+	EXP_OUT=$1
+	shift
+	ACT_OUT=$(eval "$*")
+	[ "${ACT_OUT}" = "${EXP_OUT}" ] || \
+		log "chk_out" "Error: got '${ACT_OUT}' when expecting '${EXP_OUT}'"
+	
+}
+
+
+##
+## Check the exit value of a command provided as argument against an
+## expected output
+##
+##function
+chk_exit(){
+	
+	EXP_EXIT=$1
+	shift
+	eval "$*"
+	ACT_EXIT=$?
+	[ "${ACT_EXIT}" = "${EXP_EXIT}" ] || \
+		log "chk_exit" "Error: got '${ACT_EXIT}' when expecting '${EXP_EXIT}'"
+	
+}
+
+
 
 ##########################################
 
@@ -460,16 +493,16 @@ ${DEV_GW}\nDNS1: ${DEV_DNS1}\nDNS2: ${DEV_DNS2}'\
 	
 	## Configure IP
 	
-	ip link set "${DEVNAME}" down
-	ip link set "${DEVNAME}" up
-	ip address flush dev "${DEVNAME}"
-	ip address add "${DEV_IP}/${DEV_NETMASK}" dev "${DEVNAME}"
+	chk_exit 0 ip link set "${DEVNAME}" down
+	chk_exit 0 ip link set "${DEVNAME}" up
+	chk_exit 0 ip address flush dev "${DEVNAME}"
+	chk_exit 0 ip address add "${DEV_IP}/${DEV_NETMASK}" dev "${DEVNAME}"
 	
 	## Configure GW
 	#if [ -n "${DEV_GW}" ]; then 
-		ip route flush dev "${DEVNAME}"
-		ip route add "${DEV_NET}/${DEV_NETMASK}" dev "${DEVNAME}"
-		ip route add default via "${DEV_GW}"
+	chk_exit 0 ip route flush dev "${DEVNAME}"
+	chk_exit 0 ip route add "${DEV_NET}/${DEV_NETMASK}" dev "${DEVNAME}"
+	chk_exit 0 ip route add default via "${DEV_GW}"
 	#fi
 	## Configure DNS
 	#if [ -n "${DEV_DNS1}" ] ||
@@ -619,13 +652,14 @@ wpa_authenticate_EAP_PEAP(){
 	# now we can begin -- get the EAP key_mgmt
 	KEY_MGMT=$(wpa_cli -i ${DEVNAME} get_network ${NET_NUM} key_mgmt | tr ' ' '\n' | \
 					  grep "EAP" | head -1)
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt ${KEY_MGMT}
+	
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt ${KEY_MGMT}
 
 	## Set the eap to PEAP
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} eap PEAP
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} eap PEAP
 	## Set identity and password
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} identity "${EAP_IDENTITY}"
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} password "${EAP_PASSWORD}"
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} identity "${EAP_IDENTITY}"
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} password "${EAP_PASSWORD}"
 
 	eval "${DIALOG}   --defaultno --yesno \
 			   'Network \"${W_ESSID}\" added\nSave configuration file?' \
@@ -637,7 +671,7 @@ wpa_authenticate_EAP_PEAP(){
 
 	
 	## We can now enable the network
-	wpa_cli -i ${DEVNAME} enable_network ${NET_NUM}
+	chk_out "OK" wpa_cli -i ${DEVNAME} enable_network ${NET_NUM}
 	
 	return 0
 	
@@ -654,7 +688,7 @@ wifi_authenticate_EAP(){
 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
     
 	log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
 	
 	## then we check what kind of EAP authentication is available:
 	##
@@ -681,7 +715,7 @@ wifi_authenticate_EAP(){
 	### If we get here, there was an error before, and we should
 	### remove the network to not clutter wpa_supplicant...
 	
-	wpa_cli -i ${DEVNAME} remove_network ${NET_NUM}
+	chk_out "OK" wpa_cli -i ${DEVNAME} remove_network ${NET_NUM}
 	eval "${DIALOG}   --msgbox 'EAP-${EAP_TYPE} authentication is not currently supported\n' \
 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
 
@@ -699,8 +733,8 @@ wifi_authenticate_ESS(){
 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
     
 	log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt NONE
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt NONE
 	eval "${DIALOG}   --defaultno --yesno \
 			   'Network \"${W_ESSID}\" added\nSave configuration file?' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH} " 2> ${TMPFILE}
@@ -710,7 +744,7 @@ wifi_authenticate_ESS(){
 	fi
 
 	## We can now enable the network
-	wpa_cli -i ${DEVNAME} enable_network ${NET_NUM}
+	chk_out "OK" wpa_cli -i ${DEVNAME} enable_network ${NET_NUM}
 
 	return 0
 	
@@ -740,8 +774,8 @@ wifi_authenticate_PSK(){
 	
 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
     
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
-	wpa_cli -i ${DEVNAME} set_network ${NET_NUM} psk \"${PSK}\"
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} psk \"${PSK}\"
 	## remove the password from tmpfile
 	echo "" > ${TMPFILE}
 	eval "${DIALOG}   --defaultno --yesno \
@@ -753,7 +787,7 @@ wifi_authenticate_PSK(){
 	fi
 
 	## We can now enable the network
-	wpa_cli -i ${DEVNAME} enable_network ${NET_NUM}
+	chk_out "OK" wpa_cli -i ${DEVNAME} enable_network ${NET_NUM}
 	
 	eval "${DIALOG}  --msgbox 'Network added successfully' ${INFO_HEIGHT} ${INFO_WIDTH}"
 	return 0
@@ -797,8 +831,7 @@ wifi_authenticate(){
 	  if [ ${NET_EXISTS} != 0 ]; then
 		    NET_NUM=$(wpa_cli -i ${DEVNAME} list_networks | tail -n +2 | sed -r -e 's/\t/\|/g' \
                          | cut -d "|" -f 1,2 | grep "${W_ESSID}$" | cut -d "|" -f 1)
-		    wpa_cli -i ${DEVNAME} remove_network ${NET_NUM} > ${TMPFILE}
-		    STATUS=$(cat ${TMPFILE})
+		    STATUS=$(wpa_cli -i ${DEVNAME} remove_network ${NET_NUM})
 		    if [ "${STATUS}" != "OK" ]; then
 			      eval "${DIALOG}  --msgbox 'Error while removing existing \
  network:\n$essid: {W_ESSID}'" ${INFO_HEIGHT} ${INFO_WIDTH}
@@ -912,8 +945,7 @@ wifi_save_file(){
 ##local 
 DEVNAME=$1
 	
-	wpa_cli -i ${DEVNAME} save_config | tail -1 > ${TMPFILE}
-	SAVE_STATUS=$(cat ${TMPFILE})
+	SAVE_STATUS=$(wpa_cli -i ${DEVNAME} save_config | tail -1 )
 	if [ "${SAVE_STATUS}" = "OK" ]; then
 		eval "${DIALOG}  --msgbox 'Current configuration dumped to file ${WPA_FILE}' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
@@ -1228,20 +1260,19 @@ configure_wifi(){
 ##function 
 set_device_up(){
 
-##local 
-DEVNAME=$1
-	
-	ip link set ${DEVNAME} up 
+	##local 
+	DEVNAME=$1
 
+	chk_exit 0 ip link set ${DEVNAME} up 
+	
 }
 
 ##function 
 set_device_down(){
-
-##local 
-DEVNAME=$1
 	
-	ip link set ${DEVNAME} down
+	##local 
+	DEVNAME=$1
+	chk_exit 0 ip link set ${DEVNAME} down
 
 }
 
