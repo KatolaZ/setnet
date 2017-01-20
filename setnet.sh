@@ -323,34 +323,39 @@ check_sudo(){
 
 ##
 ## Check the output of a command provided as argument against an
-## expected output
+## expected output. Return 1 if the check fails, otherwise return 0
 ##
 ##function
 chk_out(){
 	
 	EXP_OUT=$1
 	shift
-	ACT_OUT=$(eval "$*")
+	log "chk_out" "check output of: $(echo $@)"
+	ACT_OUT=$($@)
 	[ "${ACT_OUT}" = "${EXP_OUT}" ] || \
-		log "chk_out" "Error: got '${ACT_OUT}' when expecting '${EXP_OUT}'"
+		log "chk_out" "Error: got '${ACT_OUT}' when expecting '${EXP_OUT}'" && \
+			return 1
+	return 0
 	
 }
 
 
 ##
 ## Check the exit value of a command provided as argument against an
-## expected output
+## expected output -- return 1 if the check fails, otherwise return 0
 ##
 ##function
 chk_exit(){
 	
 	EXP_EXIT=$1
 	shift
-	eval "$*"
+	log "chk_exit" "check exit value of: $(echo $@)"
+	$@
 	ACT_EXIT=$?
 	[ "${ACT_EXIT}" = "${EXP_EXIT}" ] || \
-		log "chk_exit" "Error: got '${ACT_EXIT}' when expecting '${EXP_EXIT}'"
-	
+		log "chk_exit" "Error: got '${ACT_EXIT}' when expecting '${EXP_EXIT}'" && \
+			return 1
+	return 0
 }
 
 
@@ -631,7 +636,14 @@ wpa_authenticate_EAP_PEAP(){
 	##unimplemented "wpa_authenticate_EAP_PEAP"
 
 	DEVNAME=$1
-	NET_NUM=$2
+	W_ESSID=$2
+
+	## We first add the new network
+	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
+    
+	log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
+
 	
 	## we get the needed information, namely:
 	##
@@ -649,11 +661,8 @@ wpa_authenticate_EAP_PEAP(){
 	## Remove identity and password from the temp file
 	echo "" > ${TMPFILE}
 
-	# now we can begin -- get the EAP key_mgmt
-	KEY_MGMT=$(wpa_cli -i ${DEVNAME} get_network ${NET_NUM} key_mgmt | tr ' ' '\n' | \
-					  grep "EAP" | head -1)
 	
-	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt ${KEY_MGMT}
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt EAP
 
 	## Set the eap to PEAP
 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} eap PEAP
@@ -662,7 +671,7 @@ wpa_authenticate_EAP_PEAP(){
 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} password "${EAP_PASSWORD}"
 
 	eval "${DIALOG}   --defaultno --yesno \
-			   'Network \"${W_ESSID}\" added\nSave configuration file?' \
+			   'Network \"${W_ESSID}\" configured\nSave configuration file?' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH} " 2> ${TMPFILE}
 	if [ $? -eq 0 ]; then
 		## Save the config file
@@ -679,53 +688,57 @@ wpa_authenticate_EAP_PEAP(){
 
 
 ##function
-wifi_authenticate_EAP(){
+# wifi_authenticate_EAP(){
 
-	DEVNAME="$1"
-	W_ESSID="$2"
+# 	DEVNAME="$1"
+# 	W_ESSID="$2"
 
-	## We first add the new network
-	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
+# 	## We first add the new network
+# 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
     
-	log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
-	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
+# 	log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
+# 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
 	
-	## then we check what kind of EAP authentication is available:
-	##
-	EAP_TYPE=$(wpa_cli -i ${DEVNAME} get_network ${NET_NUM} eap)
+# 	## then we check what kind of EAP authentication is available:
+# 	##
+# 	EAP_TYPE=$(wpa_cli -i ${DEVNAME} get_network ${NET_NUM} eap)
 
-	log "wifi_authenticate_EAP" "EAP_TYPE: ${EAP_TYPE}"
+# 	log "wifi_authenticate_EAP" "EAP_TYPE: ${EAP_TYPE}"
 	
-	case ${EAP_TYPE} in
-		"PEAP")
-			wpa_authenticate_EAP_PEAP ${DEVNAME} ${NET_NUM}
-			return $?
-		;;
-		"TLS")
-			## TLS is not currently implemented
-			wpa_authenticate_EAP_TLS ${DEVNAME} ${NET_NUM}
-			# return $?
-			;;
-		*)
-			## We don't support anything more than PEAP and TSL, atm
+# 	case ${EAP_TYPE} in
+# 		"PEAP")
+# 			wpa_authenticate_EAP_PEAP ${DEVNAME} ${NET_NUM}
+# 			return $?
+# 		;;
+# 		"TLS")
+# 			## TLS is not currently implemented
+# 			wpa_authenticate_EAP_TLS ${DEVNAME} ${NET_NUM}
+# 			# return $?
+# 			;;
+# 		*)
+# 			## We don't support anything more than PEAP and TSL, atm
 			
-			;;
-	esac
+# 			;;
+# 	esac
 
-	### If we get here, there was an error before, and we should
-	### remove the network to not clutter wpa_supplicant...
+# 	### If we get here, there was an error before, and we should
+# 	### remove the network to not clutter wpa_supplicant...
 	
-	chk_out "OK" wpa_cli -i ${DEVNAME} remove_network ${NET_NUM}
-	eval "${DIALOG}   --msgbox 'EAP-${EAP_TYPE} authentication is not currently supported\n' \
-					   ${INFO_HEIGHT} ${INFO_WIDTH}"
+# 	chk_out "OK" wpa_cli -i ${DEVNAME} remove_network ${NET_NUM}
+# 	eval "${DIALOG}   --msgbox 'EAP-${EAP_TYPE} authentication is not currently supported\n' \
+# 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
 
 
-	return 1
-}
+# 	return 1
+# }
 
 
+
+##
+## Open access point
+##
 ##function
-wifi_authenticate_ESS(){
+wifi_authenticate_NONE(){
 
 	DEVNAME="$1"
 	W_ESSID="$2"
@@ -754,13 +767,13 @@ wifi_authenticate_ESS(){
 ##function
 wifi_authenticate_PSK(){
 
-	DEVNAME="$1"
+	DEVNAME=$1
 	W_ESSID="$2"
 	
 	PSK=""
 	PSK_LENGTH=${#PSK}
 	while [ ${PSK_LENGTH} -le 7 ]; do
-		eval "${DIALOG}  --insecure --inputbox 'Please insert WPA PSK\n(8 characters)' \
+		eval "${DIALOG}  --insecure --inputbox 'Please insert WPA PSK\n(min 8 characters)' \
 				   ${INFO_HEIGHT} ${INFO_WIDTH}"  2> ${TMPFILE}
 		if [ $? -eq 1 ]; then
 			eval "${DIALOG}   --msgbox 'Network configuration aborted!!!' \
@@ -773,9 +786,14 @@ wifi_authenticate_PSK(){
 	
 	
 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
-    
+
+	log "wifi_authenticate_PSK" "NET_NUM: ${NET_NUM}"
+	log "wifi_authenticate_PSK" "W_ESSID: ${W_ESSID}"
+	log "wifi_authenticate_PSK" "PSK: ${PSK}"
+
+	
 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
-	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} psk \"${PSK}\"
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} psk "\"${PSK}\""
 	## remove the password from tmpfile
 	echo "" > ${TMPFILE}
 	eval "${DIALOG}   --defaultno --yesno \
@@ -795,6 +813,76 @@ wifi_authenticate_PSK(){
 
 }
 
+##
+## Manage WPA authentication. Choose among the available
+## authentication systems currently supported:
+##
+## - PSK
+## - EAP/PEAP
+## - EAP/TLS
+##
+
+##function
+wifi_authenticate_WPA(){
+
+	DEVNAME=$1
+	W_ESSID=$2
+
+	##
+	## Construct the menu with all the available authentication modes
+	##
+	MODES=$(echo $W_FLAGS | sed -r -e 's/\]\[/\n/g;s/\[//g;s/\]//g' | grep -E "^WPA")
+	log "wifi_authenticate_WPA" "MODES: ${MODES}"
+	MENU_ITEMS=""
+	CNT=0
+	for m in ${MODES}; do
+		WPA_TYPE=$(echo ${m} | cut -d "-" -f 1)
+		HAS_PSK=$(echo ${m} | cut -d "-" -f 2 | grep "PSK")
+		if [ "${HAS_PSK}" != "" ]; then
+			MENU_ITEMS="${MENU_ITEMS} '${WPA_TYPE}+PSK' 'Pre-shared key' "
+		fi
+
+		HAS_EAP=$(echo ${m} | cut -d "-" -f 2 | grep "EAP")
+		if [ "${HAS_EAP}" != "" ]; then
+			MENU_ITEMS="${MENU_ITEMS} '${WPA_TYPE}+EAP/PEAP' 'EAP/PEAP' "
+			MENU_ITEMS="${MENU_ITEMS} '${WPA_TYPE}+EAP/TLS' 'EAP/TLS' "
+		fi
+	done
+
+	log "wifi_authenticate_WPA" "MENU_ITEMS: ${MENU_ITEMS}"
+
+	
+	eval "${DIALOG}  --menu 'Select authentication' ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 10 \
+		   ${MENU_ITEMS} " 2> ${TMPFILE}
+
+	if [ $? != "0" ]; then
+		## conf aborted
+		log "wifi_authenticate_WPA" "configuration aborted"
+		return 1;
+	fi
+		 
+	
+	SEL_MODE=$(cat ${TMPFILE})
+	log "wifi_authenticate_WPA" "SEL_MODE: ${SEL_MODE}" 
+	case ${SEL_MODE} in
+		"WPA+EAP/PEAP"|"WPA2+EAP/PEAP")
+			wifi_authenticate_EAP_PEAP ${DEVNAME} ${W_ESSID}
+		;;
+		"WPA+EAP/TLS"|"WPA2+EAP/TLS")
+			wifi_authenticate_EAP_TLS ${DEVNAME} ${W_ESSID}
+		;;
+		"WPA+PSK"|"WPA2+PSK")
+			wifi_authenticate_PSK ${DEVNAME} ${W_ESSID}
+			;;
+		*)
+			log "wifi_authenticate_PSK" "Error. SEL_MODE '${SEL_MODE}' unsupported"
+		
+	esac
+	
+	
+}
+
+
 
 ##
 ## Manage the authentication for a given wifi ESSID
@@ -808,86 +896,70 @@ wifi_authenticate(){
 	
 ##local 
     DEVNAME=$1
-##local 
+	##local 
     W_MAC=$2
-
-
+	
+	
     log "wifi_authenticate" "configuring ${DEVNAME} on ${W_MAC}"
-	  ## This will set the variable W_ESSID appropriately
-	  wifi_essid_from_mac ${DEVNAME} ${W_MAC}
-	  
-	  ## This will set the variable W_FLAGS appropriately
-	  wifi_flags_from_mac ${DEVNAME} ${W_MAC}
+	## This will set the variable W_ESSID appropriately
+	wifi_essid_from_mac ${DEVNAME} ${W_MAC}
+	
+	## This will set the variable W_FLAGS appropriately
+	wifi_flags_from_mac ${DEVNAME} ${W_MAC}
     
-	  
-	  log "wifi_authenticate" "configuring essid: ${W_ESSID} on device: ${DEVNAME}"
-	  log "wifi_authenticate" "W_FLAGS: ${W_FLAGS}"
+	
+	log "wifi_authenticate" "configuring essid: ${W_ESSID} on device: ${DEVNAME}"
+	log "wifi_authenticate" "W_FLAGS: ${W_FLAGS}"
 
 
-	  ## If the network exists already, we first remove it...
-	  
-	  NET_EXISTS=$(wpa_cli -i ${DEVNAME} list_networks | tail -n +2 | sed -r -e 's/\t/\|/g' \
+	## If the network exists already, we first remove it...
+	
+	NET_EXISTS=$(wpa_cli -i ${DEVNAME} list_networks | tail -n +2 | sed -r -e 's/\t/\|/g' \
                         | cut -d "|" -f 2 | grep -c "${W_ESSID}$" )
-	  if [ ${NET_EXISTS} != 0 ]; then
-		    NET_NUM=$(wpa_cli -i ${DEVNAME} list_networks | tail -n +2 | sed -r -e 's/\t/\|/g' \
+	if [ ${NET_EXISTS} != 0 ]; then
+		NET_NUM=$(wpa_cli -i ${DEVNAME} list_networks | tail -n +2 | sed -r -e 's/\t/\|/g' \
                          | cut -d "|" -f 1,2 | grep "${W_ESSID}$" | cut -d "|" -f 1)
-		    STATUS=$(wpa_cli -i ${DEVNAME} remove_network ${NET_NUM})
-		    if [ "${STATUS}" != "OK" ]; then
-			      eval "${DIALOG}  --msgbox 'Error while removing existing \
+		STATUS=$(wpa_cli -i ${DEVNAME} remove_network ${NET_NUM})
+		if [ "${STATUS}" != "OK" ]; then
+			eval "${DIALOG}  --msgbox 'Error while removing existing \
  network:\n$essid: {W_ESSID}'" ${INFO_HEIGHT} ${INFO_WIDTH}
-			      return
-		    fi
-	  fi
+			return
+		fi
+	fi
 
-	  HAS_EAP=$(echo "${W_FLAGS}" | grep -E -c "WPA.*-EAP" )
+	## Check whether WPA is available
+	
+	HAS_WPA=$(echo "${W_FLAGS}" | grep -E -c "WPA" )
     
-	  log "wifi_authenticate" "HAS_EAP: \"${HAS_EAP}\"" 
-	  
-	  ### This will configure WPA-EAP
-	  if [ "${HAS_EAP}" != "0" ]; then
-		  wifi_authenticate_EAP ${DEVNAME} ${W_ESSID}
-		  if [ $? = "0" ]; then
-			  log "wifi_authenticate" "EAP configured"
-			  return 0
-		  fi
-	  fi
+	log "wifi_authenticate" "HAS_WPA: \"${HAS_WPA}\"" 
+	
+	### This will configure WPA
+	if [ "${HAS_WPA}" != "0" ]; then
+		wifi_authenticate_WPA ${DEVNAME} ${W_ESSID}
+		if [ $? = "0" ]; then
+			log "wifi_authenticate" "WPA configured"
+			return 0
+		fi
+	fi
 
-	  log "wifi_authenticate" "EAP not supported"
-    
-	  HAS_PSK=$(echo "${W_FLAGS}" | grep -E -c "WPA.*-PSK" )
-    
-	  log "wifi_authenticate" "HAS_PSK: \"${HAS_PSK}\"" 
-	  
-	  ### This will configure WPA-PSK or WPA2-PSK
-	  if [ "${HAS_PSK}" != "0" ]; then
-		  wifi_authenticate_PSK ${DEVNAME} ${W_ESSID}
-		  if [ $? = "0" ]; then
-			  log "wifi_authenticate" "WPA-PSK configured"
-			  return 0
-		  fi
-	  fi
+	log "wifi_authenticate" "WPA authentication failed, aborted, or not supported"
 
-	  log "wifi_authenticate" "WPA-PSK not supported"
+	### ...otherwise, try to configure an open connection (key_mgmt=NONE)
+	
+	log "wifi_authenticate" "Trying open (no WPA) configuration..."
+	
+	wifi_authenticate_NONE ${DEVNAME} ${W_ESSID}
+	if [ $? = "0" ]; then
+		log "wifi_authenticate" "Open connection configured"
+		return 0
+	fi
 
-	  
-	  HAS_ESS=$(echo "${W_FLAGS}" | grep -E -c "ESS" )
+	log "wifi_authenticate" "Open connection not supported"
+	
+	## No available authentication methods....
     
-	  log "wifi_authenticate" "HAS_ESS: \"${HAS_ESS}\""
-	  
-	  if [ "${HAS_ESS}" != "0" ]; then
-		  wifi_authenticate_ESS ${DEVNAME} ${W_ESSID}
-		  if [ $? = "0" ]; then
-			  log "wifi_authenticate" "ESS configured"
-			  return 0
-		  fi
-	  fi
-
-	  log "wifi_authenticate" "ESS not supported"
-	  
-	  ## No available authentication methods....
-    
-	  eval "${DIALOG}  --msgbox 'No supported authentication method for ${W_ESSID}'"
-	  return 1
+	eval "${DIALOG}  --msgbox 'No supported authentication method for ${W_ESSID}'"
+	return 1
 }
 
 
