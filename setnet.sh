@@ -219,7 +219,7 @@ check_shell(){
     ## FIXME!!! THIS TEST DOES NOT WORK yet...
     ##
 
-	SCRIPT_CMD=$(ps $$ | tail -1 | sed -r -e 's/\ +/\ /g' | cut -d " " -f 5)
+	SCRIPT_CMD=$(ps $$ | tail -1 | sed -r -e 's/\ +/\ /g;s/^\ +//g' | cut -d " " -f 5)
 	CUR_SH=$(basename ${SCRIPT_CMD})
 
     case ${CUR_SH} in
@@ -473,9 +473,9 @@ config_ip_static(){
 	##local 
 	DEVNAME=$1
 	
-	exec 3>&1	
+	
 	eval "${DIALOG}   --form 'Set network for device: ${DEVNAME}' \
-	${FORM_HEIGHT} ${FORM_WIDTH} 0 \
+	${FORM_HEIGHT} ${FORM_WIDTH} 6 \
 	'IP'            1 1 '${DEV_IP}'    1 16 16 16 \
 	'Network'       2 1 '${DEV_NET}'    2 16 16 16 \
 	'Netmask'       3 1 '${DEV_NETMASK}'  3 16 16 16 \
@@ -490,12 +490,15 @@ config_ip_static(){
 		return
 	fi
 
-	read -d "*" DEV_IP DEV_NET DEV_NETMASK DEV_GW DEV_DNS1 DEV_DNS2 < ${TMPFILE}
+	cat ${TMPFILE} | tr '\n' ' ' >${TMPFILE}_2
+	
+	read DEV_IP DEV_NET DEV_NETMASK DEV_GW DEV_DNS1 DEV_DNS2 <${TMPFILE}_2
 	eval "${DIALOG}  --msgbox 'Proposed configuration of ${DEVNAME}:\n \
 IP: ${DEV_IP}\nNetwork: ${DEV_NET}\nNetmask: ${DEV_NETMASK}\nGateway: \
 ${DEV_GW}\nDNS1: ${DEV_DNS1}\nDNS2: ${DEV_DNS2}'\
 		${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
-	
+
+	rm -f ${TMPFILE}_2
 	## Configure IP
 	
 	chk_exit 0 ip link set "${DEVNAME}" down
@@ -641,7 +644,7 @@ wpa_authenticate_EAP_PEAP(){
 	## We first add the new network
 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
     
-	log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
+	log "wifi_authenticate_EAP_PEAP" "NET_NUM: ${NET_NUM}"
 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
 
 	
@@ -649,27 +652,44 @@ wpa_authenticate_EAP_PEAP(){
 	##
 	## - identity
 	## - password
+	## - server certificate (ca_cert)
 	## 
 
-	eval "${DIALOG} --form 'PEAP credentials:' \
-		 ${FORM_HEIGHT} ${FORM_WIDTH} 0 \
-	'identity'      1 1 ''    1 16 30 80 \
-	'password'      2 1 ''    2 16 30 80 \
+	eval "${DIALOG} --form 'PEAP parameters:' \
+		 ${FORM_HEIGHT} ${FORM_WIDTH} 3 \
+	'identity'      1 1 ''    1 20 30 80 \
+	'password'      2 1 ''    2 20 30 80 \
+    'server certificate' 3 1 '' 3 20 30 80 \
 	" 2>${TMPFILE}
 
-	read -d "*" EAP_IDENTITY EAP_PASSWORD  < ${TMPFILE}
-	## Remove identity and password from the temp file
-	echo "" > ${TMPFILE}
+	if [ $? != "0" ]; then
+		log "wifi_authenticate_EAP_PEAP" "Aborting EAP/PEAP authentication"
+		wpa_cli -i ${DEVNAME} remove_network ${NET_NUM}
+		return 1
+	fi
 
 	
-	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt EAP
+	cat ${TMPFILE} | tr '\n' ' ' >${TMPFILE}_2
+	read EAP_IDENTITY EAP_PASSWORD EAP_CERT <${TMPFILE}_2
+	rm -f ${TMPFILE}_2
+	## Remove identity and password from the temp file
+	echo "" > ${TMPFILE}
+	
+	log "wpa_authenticate_EAP_PEAP" "EAP_IDENTITY: ${EAP_IDENTITY}"
+	log "wpa_authenticate_EAP_PEAP" "EAP_PASSWORD: ${EAP_PASSWORD}"
+	log "wpa_authenticate_EAP_PEAP" "EAP_CERT: ${EAP_CERT}"
+	
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt WPA-EAP
 
-	## Set the eap to PEAP
+	## Set eap to PEAP
 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} eap PEAP
 	## Set identity and password
-	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} identity "${EAP_IDENTITY}"
-	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} password "${EAP_PASSWORD}"
-
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} identity "\"${EAP_IDENTITY}\""
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} password "\"${EAP_PASSWORD}\""
+	if [ -n "${EAP_CERT}" ]; then 
+		chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ca_cert ${EAP_CERT}
+	fi
+	
 	eval "${DIALOG}   --defaultno --yesno \
 			   'Network \"${W_ESSID}\" configured\nSave configuration file?' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH} " 2> ${TMPFILE}
@@ -687,55 +707,8 @@ wpa_authenticate_EAP_PEAP(){
 }
 
 
-##function
-# wifi_authenticate_EAP(){
-
-# 	DEVNAME="$1"
-# 	W_ESSID="$2"
-
-# 	## We first add the new network
-# 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
-    
-# 	log "wifi_authenticate" "NET_NUM: ${NET_NUM}"
-# 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
-	
-# 	## then we check what kind of EAP authentication is available:
-# 	##
-# 	EAP_TYPE=$(wpa_cli -i ${DEVNAME} get_network ${NET_NUM} eap)
-
-# 	log "wifi_authenticate_EAP" "EAP_TYPE: ${EAP_TYPE}"
-	
-# 	case ${EAP_TYPE} in
-# 		"PEAP")
-# 			wpa_authenticate_EAP_PEAP ${DEVNAME} ${NET_NUM}
-# 			return $?
-# 		;;
-# 		"TLS")
-# 			## TLS is not currently implemented
-# 			wpa_authenticate_EAP_TLS ${DEVNAME} ${NET_NUM}
-# 			# return $?
-# 			;;
-# 		*)
-# 			## We don't support anything more than PEAP and TSL, atm
-			
-# 			;;
-# 	esac
-
-# 	### If we get here, there was an error before, and we should
-# 	### remove the network to not clutter wpa_supplicant...
-	
-# 	chk_out "OK" wpa_cli -i ${DEVNAME} remove_network ${NET_NUM}
-# 	eval "${DIALOG}   --msgbox 'EAP-${EAP_TYPE} authentication is not currently supported\n' \
-# 					   ${INFO_HEIGHT} ${INFO_WIDTH}"
-
-
-# 	return 1
-# }
-
-
-
 ##
-## Open access point
+## Open access point -- no WPA
 ##
 ##function
 wifi_authenticate_NONE(){
@@ -765,7 +738,7 @@ wifi_authenticate_NONE(){
 
 
 ##function
-wifi_authenticate_PSK(){
+wpa_authenticate_PSK(){
 
 	DEVNAME=$1
 	W_ESSID="$2"
@@ -866,16 +839,16 @@ wifi_authenticate_WPA(){
 	log "wifi_authenticate_WPA" "SEL_MODE: ${SEL_MODE}" 
 	case ${SEL_MODE} in
 		"WPA+EAP/PEAP"|"WPA2+EAP/PEAP")
-			wifi_authenticate_EAP_PEAP ${DEVNAME} ${W_ESSID}
+		    wpa_authenticate_EAP_PEAP ${DEVNAME} ${W_ESSID}
 		;;
 		"WPA+EAP/TLS"|"WPA2+EAP/TLS")
-			wifi_authenticate_EAP_TLS ${DEVNAME} ${W_ESSID}
+			wpa_authenticate_EAP_TLS ${DEVNAME} ${W_ESSID}
 		;;
 		"WPA+PSK"|"WPA2+PSK")
-			wifi_authenticate_PSK ${DEVNAME} ${W_ESSID}
+			wpa_authenticate_PSK ${DEVNAME} ${W_ESSID}
 			;;
 		*)
-			log "wifi_authenticate_PSK" "Error. SEL_MODE '${SEL_MODE}' unsupported"
+			log "wifi_authenticate_WPA" "Error. SEL_MODE '${SEL_MODE}' unsupported"
 		
 	esac
 	
