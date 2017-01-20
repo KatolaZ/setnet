@@ -5,6 +5,9 @@
 			* implemented workaround for zsh -- now fully supported 
 		* added chk_out and chk_exit
 			* all direct commands (e.g., ip, wpa_cli) are now checked
+	    * added support for EAP/PEAP
+		* added support for EAP/TLS
+		
 
 2017-01-07  KatolaZ  <katolaz@freaknet.org>
 

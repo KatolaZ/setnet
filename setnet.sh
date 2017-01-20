@@ -629,7 +629,79 @@ wifi_network_list(){
 ##function
 wpa_authenticate_EAP_TLS(){
 
-	unimplemented "wpa_authenticate_EAP_TLS"
+	##unimplemented "wpa_authenticate_EAP_TLS"
+	##return 1
+
+	
+	DEVNAME=$1
+	W_ESSID=$2
+
+	## We first add the new network
+	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
+    
+	log "wifi_authenticate_EAP_PEAP" "NET_NUM: ${NET_NUM}"
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ssid "\"${W_ESSID}\""
+
+	
+	## we get the needed information, namely:
+	##
+	## - identity
+	## - server certificate (ca_cert)
+	## - client certificate
+	## - 
+	## 
+
+	eval "${DIALOG} --form 'PEAP parameters:' \
+		 ${FORM_HEIGHT} ${FORM_WIDTH} 3 \
+	'identity'      1 1 ''    1 20 30 80 \
+    'server certificate' 2 1 '' 2 20 30 200 \
+    'client certificate' 3 1 '' 3 20 30 200 \
+    'private key'        4 1 '' 4 20 30 200 \
+    'private key password' 5 1 '' 5 30 30 80 \
+	" 2>${TMPFILE}
+
+	if [ $? != "0" ]; then
+		log "wifi_authenticate_EAP_TLS" "Aborting EAP/TLS authentication"
+		wpa_cli -i ${DEVNAME} remove_network ${NET_NUM}
+		return 1
+	fi
+
+	##
+	## Now, this is not super-clean, but seems necessary to maintain
+	## POSIX shell compatibility
+	##
+	cat ${TMPFILE} | tr '\n' ' ' >${TMPFILE}_2
+	read EAP_IDENTITY EAP_SERV_CERT  EAP_CLIENT_CERT EAP_PRIV_KEY EAP_PRIV_KEY_PWD <${TMPFILE}_2
+	rm -f ${TMPFILE}_2
+	## Remove everything from the temp file
+	echo "" > ${TMPFILE}
+
+
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} key_mgmt WPA-EAP
+
+	## Set eap to PEAP
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} eap TLS
+	## Set identity
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} identity "\"${EAP_IDENTITY}\""
+
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ca_cert "\"${EAP_SERV_CERT}\""
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} client_cert "\"${EAP_CLIENT_CERT}\""
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} private_key "\"${EAP_PRIV_KEY}\""
+	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} private_key_passwd "\"${EAP_PRIV_KEY_PWD}\""
+
+	eval "${DIALOG}   --defaultno --yesno \
+			   'Network \"${W_ESSID}\" configured\nSave configuration file?' \
+			   ${INFO_HEIGHT} ${INFO_WIDTH} " 2> ${TMPFILE}
+	if [ $? -eq 0 ]; then
+		## Save the config file
+		wifi_save_file ${DEVNAME}
+	fi
+	
+	## We can now enable the network
+	chk_out "OK" wpa_cli -i ${DEVNAME} enable_network ${NET_NUM}
+	
+	return 0
+	
 }
 
 
@@ -668,7 +740,10 @@ wpa_authenticate_EAP_PEAP(){
 		return 1
 	fi
 
-	
+	##
+	## Now, this is not super-clean, but seems necessary to maintain
+	## POSIX shell compatibility
+	##
 	cat ${TMPFILE} | tr '\n' ' ' >${TMPFILE}_2
 	read EAP_IDENTITY EAP_PASSWORD EAP_CERT <${TMPFILE}_2
 	rm -f ${TMPFILE}_2
@@ -687,7 +762,7 @@ wpa_authenticate_EAP_PEAP(){
 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} identity "\"${EAP_IDENTITY}\""
 	chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} password "\"${EAP_PASSWORD}\""
 	if [ -n "${EAP_CERT}" ]; then 
-		chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ca_cert ${EAP_CERT}
+		chk_out "OK" wpa_cli -i ${DEVNAME} set_network ${NET_NUM} ca_cert "\"${EAP_CERT}\""
 	fi
 	
 	eval "${DIALOG}   --defaultno --yesno \
