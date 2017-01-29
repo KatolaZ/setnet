@@ -8,6 +8,7 @@
 .Sh SYNOPSIS
 .Nm setnet.sh
 .Op Fl c Ar config_file
+.Op Fl d Ar trace_file
 .Op Fl h
 .Op Fl v
 .Sh DESCRIPTION
@@ -20,10 +21,8 @@ including ip(8), dhclient(8), and wpa_cli(8).
 .Pp
 setnet.sh allows to configure static and/or DHCP-based connections to
 a LAN/WLAN, and to manage the authentication to a Wi-Fi network. At
-present, only open authentication (no key) and WPA-Personal
-authentication (WPA-PSK/WPA2-PSK) are supported. The support for basic
-WPA-Enterprise authentication (WPA-EAP-PEAP and WPA-EAP-TLS) is under
-development.
+present, open (no key), WPA-Personal (WPA-PSK and WPA2-PSK), and
+WPA-Enterprise (EAP/PEAP or EAP/TLS) are supported. 
 
 .Pp
 setnet.sh can be also used as a minimal interface to basic network
@@ -40,6 +39,8 @@ setnet.sh recognises the following options:
 .Bl -tag -width Ds
 .It Fl c Ar config_file
 specify a configuration file
+.It Fl d Ar trace_file
+enable dialog debug, and write the trace to the provided trace_file
 .It Fl h
 print a minimal help and exit
 .It Fl v

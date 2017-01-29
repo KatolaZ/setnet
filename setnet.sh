@@ -292,8 +292,24 @@ check_deps(){
     
 }
 
+
 ##
-## Generic function fo unimplemented features. It just pops up a
+## Set debug mode -- dialog is instructed to dump a trace to the file
+## TRACE_FILE provided by the user
+##
+
+##function
+set_debug(){
+
+	TRACE_FILE=$1
+	DEBUG_MODE="DEBUG"
+	DIALOG="${DIALOG} --trace ${TRACE_FILE}"
+
+}
+
+
+##
+## Generic function for unimplemented features. It just pops up a
 ## message-box and returns
 ##
 
@@ -1123,7 +1139,7 @@ wifi_restart_wpa(){
 ##local 
     WPA_FILE=$2
 	
-    WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME}" | 
+    WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME} " | 
 sed -r -e 's/^\ +//g' | cut -d " " -f 1)
     
 	  log "wifi_restart_wpa" "WPA_PID: ${WPA_PID}"
@@ -1217,60 +1233,6 @@ wifi_disable(){
 
 
 
-
-
-##function 
-wifi_load_file(){
-	
-##local 
-    DEVNAME=$1
-
-	MSG="You are running setnet through sudo or sup!!!\nLoad file is
-	disabled!"  check_sudo "${MSG}"
-
-	if [ $? -eq 1 ]; then
-		return
-	fi
-
-	
-	eval "${DIALOG}  --fselect ${WPA_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" \
-		 2>${TMPFILE}
-	
-	if [ $? -eq 0 ]; then
-		SEL_FILE=$(cat ${TMPFILE})
-		while [ -d "${SEL_FILE}" ]; do
-			eval "${DIALOG}  --fselect ${SEL_FILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}" \
-				 2>${TMPFILE}
-			if [ $? -eq 0 ]; then
-				SEL_FILE=$(cat ${TMPFILE})
-			else
-				eval "${DIALOG}   --msgbox 'WPA_FILE was not modified' \
-						   ${INFO_HEIGHT} ${INFO_WIDTH}"
-				return
-			fi
-		done
-		
-		if [ -f "${SEL_FILE}" ]; then
-			WPA_FILE=${SEL_FILE}
-			eval "${DIALOG}   --defaultno --yesno \
-					   'WPA_FILE changed to ${WPA_FILE}\nRestart wpa_supplicant?' \
-					   ${INFO_HEIGHT} ${INFO_WIDTH}"
-			if [ $? -eq 0 ]; then
-				wifi_restart_wpa ${DEVNAME} ${WPA_FILE}
-			fi
-		else
-			eval "${DIALOG}   --msgbox 'Invalid file name!\n WPA_FILE *not* changed' \
-					  ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
-			return 
-		fi
-	else
-		eval "${DIALOG}   --msgbox 'WPA_FILE was not modified' \
-				   ${INFO_HEIGHT} ${INFO_WIDTH}"
-	fi
-	
-}
-
-
  
 ##function 
 config_wifi(){
@@ -1281,7 +1243,7 @@ config_wifi(){
     while true; do
 		CUR_NET=$(wpa_cli -i ${DEVNAME} status | grep "^ssid" | cut -d "=" -f 2)
 		eval "${DIALOG}   --cancel-label 'Up' \
-			   --menu 'Configuring ${DEVNAME}\tCurrent network: ${CUR_NET}\n(Current file: ${WPA_FILE})' \
+			   --menu 'Configuring ${DEVNAME}\nCurrent network: ${CUR_NET}\n(Current file: ${WPA_FILE})' \
 			   ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 12 \
 			   'Restart' 'Restart wpa_supplicant' \
 			   'Enable' 'Enable a configured network' \
@@ -1290,9 +1252,7 @@ config_wifi(){
 			   'Remove' 'Delete an existing network' \
 			   'Show' 'Show current configuration file' \
 			   'Edit' 'Edit current configuration file' \
-			   'Save' 'Save configuration to file'\
-			   'Load' 'Load configuration from file'\
-			   'New' 'Create new configuration file' " \
+			   'Save' 'Save configuration to file' "\
              2>${TMPFILE}
         
 		    if [ $? = "1" ]; then
@@ -1325,12 +1285,6 @@ config_wifi(){
 				        ;;
 			      "Save")
 				        wifi_save_file ${DEVNAME}
-				        ;;
-			      "Load")
-				        wifi_load_file ${DEVNAME}
-				        ;;
-			      "New")
-                unimplemented "New"
 				        ;;
 		    esac
 	  done
@@ -2099,7 +2053,13 @@ initialise(){
 
 	chmod 600 ${LOGFILE}
 	
-	log "setnet" "Starting afresh on $(date)"
+	log "initialise" "Starting afresh on $(date)"
+	log "initialise" "Using TMPFILE: ${TMPFILE}"
+	log "initialise" "Using LOGFILE: ${LOGFILE}"
+
+	if [ -n ${DEBUG_MODE} ]; then 
+		log "initialise" "Running in debug mode -- dumping dialog trace to ${TRACE_FILE}"
+	fi
 	
 	EUID=$(id -ru)
 	if [ "${EUID}" = "0" ] &&
@@ -2186,30 +2146,34 @@ main(){
 
 SETNETRC=""
 
-while getopts ":c:hv" opt; do
+while getopts ":c:d:hv" opt; do
 	  
 	  case $opt in
 		    c)
-			      #echo "Got option -c ${OPTARG}"
-			      SETNETRC=$(realpath ${OPTARG})
-			      #echo "SETNETRC: ${SETNETRC}"
-			      ;;
+			    #echo "Got option -c ${OPTARG}"
+			    SETNETRC=$(realpath ${OPTARG})
+			    #echo "SETNETRC: ${SETNETRC}"
+			    ;;
 		    h)
-			      show_help $(basename $0)
-			      exit 1
-			      ;;
+			    show_help $(basename $0)
+			    exit 1
+			    ;;
 		    v)
-			      show_version $(basename $0)
-			      exit 1
-			      ;;
-		    \?)
-			      echo "Invalid option: -${OPTARG}"
-			      exit 1
-			      ;;
-		    :)
-			      echo "Option -${OPTARG} requires an argument"
-			      exit 1
-			      ;;
+			    show_version $(basename $0)
+			    exit 1
+			    ;;
+			d)
+				TRACE_FILE=$(realpath ${OPTARG})
+				set_debug ${TRACE_FILE}
+				;;
+			\?)
+			    echo "Invalid option: -${OPTARG}"
+			    exit 1
+			    ;;
+			:)
+				echo "Option -${OPTARG} requires an argument"
+				exit 1
+				;;
 	  esac
 done
 

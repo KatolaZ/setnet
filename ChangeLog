@@ -1,3 +1,13 @@
+2017-01-29  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh:
+			* removed "Load file" and "New File" in WiFi configuration 
+
+2017-01-23  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh:
+			* fixed a few minors bugs
+
 2017-01-20  KatolaZ  <katolaz@freaknet.org>
 
 		* setnet.sh (0.3):
