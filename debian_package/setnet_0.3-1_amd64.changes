@@ -1,0 +1,42 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Format: 1.8
+Date: Sun, 29 Jan 2017 15:43:35 +0000
+Source: setnet
+Binary: setnet
+Architecture: source all
+Version: 0.3-1
+Distribution: unstable
+Urgency: medium
+Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Changed-By: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Description:
+ setnet     - simple shell/dialog tool to configure networks
+Changes:
+ setnet (0.3-1) unstable; urgency=medium
+ .
+   * Version 0.3 -- See ChangeLog for details
+Checksums-Sha1:
+ 4d4ea9bcd81404ee0fee1c96d938b5264b973b7b 1029 setnet_0.3-1.dsc
+ 4da555a67963c294da095ff109cc667d59e1a165 15264 setnet_0.3.orig.tar.xz
+ 385b56aa57ba03d8796181ef614990e75ed7972e 9784 setnet_0.3-1.debian.tar.xz
+ 6aa9c86346950682559140f14c78812db6dce917 19184 setnet_0.3-1_all.deb
+Checksums-Sha256:
+ 1338f58b26d2fc69ee7cafb6ccb17964e4e8cc304bacb61f02d9fc05c95143d1 1029 setnet_0.3-1.dsc
+ 3dc62ec17da189929d150d81d71fcf523cebe96e649df12895181008554b1b89 15264 setnet_0.3.orig.tar.xz
+ 924cbccca6ebf1186685b28b4b0b4ce859b9c2edac0934a67f70c87fd572d6a0 9784 setnet_0.3-1.debian.tar.xz
+ 8d21265a6c08452099fb37e8238262a26cf25f3de517e16708128ff5c98265c3 19184 setnet_0.3-1_all.deb
+Files:
+ 027742a6c6c9eafab82ba703ed5540bd 1029 unknown optional setnet_0.3-1.dsc
+ 815d0e40991d5ddf0283d7fa50117024 15264 unknown optional setnet_0.3.orig.tar.xz
+ 4bfb7ef1dd2a9cd2dd906768b165c982 9784 unknown optional setnet_0.3-1.debian.tar.xz
+ 5a91801da4f525c435d7d59d560d6679 19184 unknown optional setnet_0.3-1_all.deb
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEARECAAYFAliOD0kACgkQXyCzrgtfBi9FVgCfUsTa40vLLPKfZrpdrG0QypyO
+87kAn0RxwdhcVFD+DZiZUWvabiYWDYDj
+=lyD1
+-----END PGP SIGNATURE-----

@@ -1,0 +1,329 @@
+<!-- Creator     : groff version 1.22.2 -->
+<!-- CreationDate: Sun Jan 29 18:10:38 2017 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title></title>
+</head>
+<body>
+
+<hr>
+
+
+<p>SETNET(8) System Manager&rsquo;s Manual SETNET(8)</p>
+
+<p style="margin-top: 1em"><b>NAME</b></p>
+
+<p style="margin-left:6%;"><b>setnet.sh</b> &mdash;
+minimalist shell script for network configuration with
+dialog interface</p>
+
+<p style="margin-top: 1em"><b>SYNOPSIS</b></p>
+
+<p style="margin-left:19%;"><b>setnet.sh</b>
+[<b>&minus;c&nbsp;</b><i>config_file</i>]
+[<b>&minus;d&nbsp;</b><i>trace_file</i>] [<b>&minus;h</b>]
+[<b>&minus;v</b>]</p>
+
+<p style="margin-top: 1em"><b>DESCRIPTION</b></p>
+
+<p style="margin-left:6%;">setnet.sh is a shell script for
+network management, with a terminal user interface based on
+dialog(1). It works as a wrapper around the basic tools for
+the configuration of Ethernet and Wi-Fi interfaces,
+including ip(8), dhclient(8), and wpa_cli(8).</p>
+
+<p style="margin-left:6%; margin-top: 1em">setnet.sh allows
+to configure static and/or DHCP-based connections to a
+LAN/WLAN, and to manage the authentication to a Wi-Fi
+network. At present, open (no key), WPA-Personal (WPA-PSK
+and WPA2-PSK), and WPA-Enterprise (EAP/PEAP or EAP/TLS) are
+supported.</p>
+
+<p style="margin-left:6%; margin-top: 1em">setnet.sh can be
+also used as a minimal interface to basic network
+diagnostics tools, including ping(8), host(1),
+traceroute(1), and netstat(8). It allows to show some
+information about network status, including the routing
+table, content of resolv.conf and nsswitch.conf, active
+TCP/IP connections, running daemons, etc., and to dump those
+information to a file. Support for posting a dump of network
+status to websites like pastebin.com is under
+development.</p>
+
+<p style="margin-left:6%; margin-top: 1em">setnet.sh
+recognises the following options:</p>
+
+<p style="margin-top: 1em"><b>&minus;c</b>
+<i>config_file</i></p>
+
+<p style="margin-left:17%;">specify a configuration
+file</p>
+
+<p style="margin-top: 1em"><b>&minus;d</b>
+<i>trace_file</i></p>
+
+<p style="margin-left:17%;">enable dialog debug, and write
+the trace to the provided trace_file</p>
+
+<p style="margin-top: 1em"><b>&minus;h</b></p>
+
+<p style="margin-left:17%; margin-top: 1em">print a minimal
+help and exit</p>
+
+<p style="margin-top: 1em"><b>&minus;v</b></p>
+
+<p style="margin-left:17%; margin-top: 1em">show version
+and exit</p>
+
+<p style="margin-left:6%; margin-top: 1em">The main
+setnet.sh menu allows to choose from five sections, as
+described below:</p>
+
+<p style="margin-top: 1em"><b>Setup</b></p>
+
+<p style="margin-left:17%; margin-top: 1em">This section
+allows to configure a network interface, selected from the
+list of available network devices (as returned by &quot;ip
+-o link&quot;). Once a device has been selected, it is
+possible to choose on of the following functions</p>
+
+<p style="margin-top: 1em"><b>View</b></p>
+
+<p style="margin-left:26%; margin-top: 1em">View current
+device configuration, i.e., MAC address, link status, IP
+address, etc.</p>
+
+<p style="margin-top: 1em"><b>WiFi</b></p>
+
+<p style="margin-left:26%; margin-top: 1em">(available only
+for wi-fi devices) Manage the association to a Wi-Fi
+network. This allows to restart wpa_supplicant, to manage
+the currently configured networks, to add a new network, and
+to show (and modify) the configuration file used by
+wpa_supplicant.</p>
+
+<p style="margin-top: 1em"><b>Conf</b></p>
+
+<p style="margin-left:26%; margin-top: 1em">Configure the
+IP address of the device. It is possible to choose between
+<i>DHCP-based</i> and <i>Static</i> IP configuration.</p>
+
+<p style="margin-top: 1em"><b>Start</b></p>
+
+<p style="margin-left:26%; margin-top: 1em">Bring the
+interface up (using &quot;ip link set &lt;DEVNAME&gt;
+up&quot;).</p>
+
+<p style="margin-top: 1em"><b>Stop</b></p>
+
+<p style="margin-left:26%; margin-top: 1em">Bring the
+interface down (using &quot;ip link set &lt;DEVNAME&gt;
+down&quot;).</p>
+
+<p style="margin-top: 1em"><b>Restart</b></p>
+
+<p style="margin-left:26%;">Restart the interface by
+putting it first down and then up again.</p>
+
+<p style="margin-top: 1em"><b>Info</b></p>
+
+<p style="margin-left:17%; margin-top: 1em">This section
+provides information about the current network status and
+allows to perform basic diagnostic tasks. The following
+functions are available:</p>
+
+<p style="margin-top: 1em"><b>ARP</b></p>
+
+<p style="margin-left:24%; margin-top: 1em">Show the
+current ARP table</p>
+
+<p style="margin-top: 1em"><b>Connections</b></p>
+
+<p style="margin-left:24%;">List active network connections
+by running &quot;netstat -tnp&quot;</p>
+
+<p style="margin-top: 1em"><b>DNS</b></p>
+
+<p style="margin-left:24%; margin-top: 1em">List the
+configured DNS, by showing the &quot;nameserver&quot;
+entries in <i>/etc/resolv.conf.</i></p>
+
+<p style="margin-top: 1em"><b>Lookup</b></p>
+
+<p style="margin-left:24%;">Perform a DNS lookup through
+&quot;host &lt;HOST&gt;&quot;. If &lt;HOST&gt; is a FQDN,
+the result will be the IP address(es) associated to that
+domain name. If &lt;HOST&gt; is an IP address, the result is
+the list of FQDNs associated to that address.</p>
+
+<p style="margin-top: 1em"><b>Ping</b></p>
+
+<p style="margin-left:24%; margin-top: 1em">Ping a host,
+using its IP of FQDN (Fully-Qualified Domain Name) by
+running &quot;ping -c 5 &lt;HOST&gt;&quot;.</p>
+
+<p style="margin-top: 1em"><b>Resolver</b></p>
+
+<p style="margin-left:24%;">Show the system resolver
+configuration, i.e. the content of the file
+<i>/etc/nsswitch.conf</i></p>
+
+<p style="margin-top: 1em"><b>Routes</b></p>
+
+<p style="margin-left:24%;">Show the current routing
+table</p>
+
+<p style="margin-top: 1em"><b>Services</b></p>
+
+<p style="margin-left:24%;">Show a list of processes
+(daemons) listening on TCP ports, by running &quot;netstat
+-ltnp&quot;.</p>
+
+<p style="margin-top: 1em"><b>Traceroute</b></p>
+
+<p style="margin-left:24%;">Show the route to a given host,
+as obtained by running the command &quot;traceroute
+&lt;HOST&gt;&quot;.</p>
+
+<p style="margin-top: 1em"><b>Dump</b></p>
+
+<p style="margin-left:17%; margin-top: 1em">Dump
+information about current network status to a file. The user
+can choose which information to include from a checklist.
+The support for dumping network information to web
+applications like <i>pastebin</i> is currently under
+development.</p>
+
+<p style="margin-top: 1em"><b>Log</b></p>
+
+<p style="margin-left:17%; margin-top: 1em">Show the
+logfile written by setnet.sh</p>
+
+<p style="margin-top: 1em"><b>About</b></p>
+
+<p style="margin-left:17%; margin-top: 1em">Provide
+information about copyright, contributors, and license.</p>
+
+<p style="margin-top: 1em"><b>ENVIRONMENT</b></p>
+
+<p style="margin-left:6%;">setnet.sh uses the following
+environment variables:</p>
+
+<p style="margin-top: 1em">WPA_FILE</p>
+
+<p style="margin-left:17%;">The configuration file for
+wpa_supplicant(1) (default to
+<i>/etc/wpa_supplicant/wpa_setnet.conf</i> ).</p>
+
+<p style="margin-top: 1em">LOGFILE</p>
+
+<p style="margin-left:17%;">The file used by setnet.sh for
+logging (default to <i>/var/log/setnet.log</i> ).</p>
+
+<p style="margin-top: 1em">TRUNCATE_LOG</p>
+
+<p style="margin-left:17%;">If it is set to &quot;yes&quot;
+or &quot;YES&quot;, the log file is truncated when setnet.sh
+starts.</p>
+
+<p style="margin-top: 1em">WIFI_DEVICES</p>
+
+<p style="margin-left:17%;">List of wifi devices. This list
+is used only when automatic detection of wifi devices
+fails.</p>
+
+<p style="margin-left:6%; margin-top: 1em">These variables
+are normally set in the setnetrc configuration file (see
+<b>FILES</b> below). setnet.sh will exit if either WPA_FILE
+or LOGFILE are undefined.</p>
+
+<p style="margin-top: 1em"><b>FILES</b></p>
+
+<p style="margin-left:6%;">setnet.sh uses a configuration
+file which defines the environment variables described in
+<b>ENVIRONMENT</b> above. setnet.sh looks for the following
+files:</p>
+
+<p style="margin-top: 1em"><b>&bull;</b></p>
+
+<p style="margin-left:19%;">the <i>config_file</i> provided
+through the option <b>-c</b> (if any).</p>
+
+<p style="margin-top: 1em"><b>&bull;</b></p>
+
+<p style="margin-left:19%;">the file <i>/etc/setnetrc</i>
+(if it exists)</p>
+
+<p style="margin-top: 1em"><b>&bull;</b></p>
+
+<p style="margin-left:19%;">the file <i>~/.setnetrc</i> (if
+it exists)</p>
+
+<p style="margin-left:6%; margin-top: 1em">in that order.
+If a <i>config_file</i> is provided, the other files are
+ignored. Otherwise, if <i>~/.setnetrc</i> exists, it takes
+precedence over <i>/etc/setnetrc.</i></p>
+
+<p style="margin-top: 1em"><b>SEE ALSO</b></p>
+
+<p style="margin-left:6%;">ip(8), dhclient(8),
+wpa_supplicant(8), wpa_cli(8), netstat(8).</p>
+
+<p style="margin-top: 1em"><b>AUTHORS</b></p>
+
+<p style="margin-left:6%;">setnet.sh is Free Software,
+distributed under the terms of the GNU General Public
+License (GPL), version 3 of the License.</p>
+
+<p style="margin-left:6%; margin-top: 1em">setnet.sh is
+copyleft (c) by Vincenzo (KatolaZ) Nicosia
+&lt;katolaz@freaknet.org&gt;</p>
+
+<p style="margin-top: 1em"><b>BUGS</b></p>
+
+<p style="margin-left:6%;">At present, setnet.sh can
+reliably manage no more than one Wi-Fi device at a time.
+This is due to the fact that the configuration file for
+wpa_supplicant is defined in the environment variable
+WPA_FILE. There is no limitation on the number of Ethernet
+devices that setnet.sh can manage, but you should be careful
+with having more than one <b>dhclient</b> processes running,
+since each of them will try to add a default gateway to the
+kernel routing table.</p>
+
+<p style="margin-top: 1em"><b>SECURITY
+CONSIDERATIONS</b></p>
+
+<p style="margin-left:6%;">Configuring networking is an
+administration task, and setnet.sh requires root privileges
+to work properly. It is possible to allow a regular user to
+run setnet.sh, e.g. by using sudo(8) or sup(1) (see
+https://sup.dyne.org/ for more information about sup).</p>
+
+<p style="margin-left:6%; margin-top: 1em">setnet.sh can
+recognise if it is running under sudo(8) or sup(1), by
+looking at the content of the environment variables
+SUDO_UID/SUP_UID, SUDO_GID/SUP_GID, and SUDO_USER/SUP_USER.
+When setnet.sh is run under sudo(8) or sup(1), some
+functionalities are disabled. In particular, loading and
+editing an alternate wpa_supplicant configuration file is
+forbidden (and for obvious reasons, since this would in
+principle allow the sudoer to edit *any* file in your
+system).</p>
+
+<p style="margin-left:6%; margin-top: 1em">Linux
+January&nbsp;06, 2017 Linux</p>
+<hr>
+</body>
+</html>

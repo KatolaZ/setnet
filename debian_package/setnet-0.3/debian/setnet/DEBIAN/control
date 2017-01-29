@@ -1,0 +1,14 @@
+Package: setnet
+Version: 0.3-1
+Architecture: all
+Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Installed-Size: 106
+Depends: bash | busybox | dash | ksh | mksh | posh | yash | zsh, dhcp-client, dialog, iproute2, iw
+Suggests: wpasupplicant, pastebinit, net-tools, iputils-ping, bind9-host, traceroute
+Section: unknown
+Priority: optional
+Homepage: http://kalos.mine.nu/setnet
+Description: simple shell/dialog tool to configure networks
+ setnet is a shell script with a dialog UI to configure ethernet
+ and wifi connections. It is meant to be POSIX-compliant, and has
+ been tested on bash, busybox, dash, ksh, mksh, posh, yash, and zsh.
