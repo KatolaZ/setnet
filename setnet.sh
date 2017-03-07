@@ -261,7 +261,7 @@ check_deps(){
 		setopt shwordsplit
 	fi
     
-    for h in ${HARD_DEPS}; do
+    for h in $(echo ${HARD_DEPS}); do
         _W=$(which ${h})
         if [ -z "${_W}" ]; then
             echo "Error: required command \"${h}\" not found. Exiting..."
@@ -270,7 +270,7 @@ check_deps(){
         log "check_deps" "NOTICE: required command '${h}'...found"
     done
     
-    for s in ${SOFT_DEPS}; do
+    for s in $(echo ${SOFT_DEPS}); do
         _S=$(which ${s})
         if [ -z "${_S}" ]; then
             log "check_deps" "WARNING: suggested command '${s}' not found! Some functions might not work properly"
@@ -278,7 +278,7 @@ check_deps(){
     done
 
     HAS_OPTS=""
-    for o in ${OPT_DEPS}; do
+    for o in $(echo  ${OPT_DEPS}); do
         _O=$(which ${o})
         if [ -n "${_O}" ]; then
             HAS_OPTS=" ${HAS_OPTS} ${o} "
@@ -1615,7 +1615,7 @@ netdiag_routes(){
 
     DUMPFILE=$1
 
-    HAS_NETSTAT=$(echo ${HAS_OPTS} | grep -c " netstat ")
+    HAS_NETSTAT=$(echo "${HAS_OPTS}" | grep -c "\ netstat\ ")
     if [ ${HAS_NETSTAT} -ne 1 ]; then
         notfound "netstat"
         return
@@ -1663,7 +1663,7 @@ netdiag_connections(){
     DUMPFILE=$1
 
    
-    HAS_NETSTAT=$(echo ${HAS_OPTS} | grep -c " netstat ")
+    HAS_NETSTAT=$(echo "${HAS_OPTS}" | grep -c "\ netstat\ ")
     if [ ${HAS_NETSTAT} -ne 1 ]; then
         notfound "netstat"
         return
@@ -1692,7 +1692,7 @@ netdiag_services(){
 
     DUMPFILE=$1
 
-    HAS_NETSTAT=$(echo ${HAS_OPTS} | grep -c " netstat ")
+    HAS_NETSTAT=$(echo "${HAS_OPTS}" | grep -c "\ netstat\ ")
     if [ ${HAS_NETSTAT} -ne 1 ]; then
         notfound "netstat"
         return
@@ -1719,7 +1719,7 @@ netdiag_services(){
 ##function
 netdiag_ping(){
     
-    HAS_PING=$(echo ${HAS_OPTS} | grep -E -c "\ ping\ ")
+    HAS_PING=$(echo "${HAS_OPTS}" | grep -E -c "\ ping\ ")
     if [ ${HAS_PING} -ne 1 ]; then
         notfound "ping"
         return
@@ -1746,7 +1746,7 @@ netdiag_ping(){
 ##function
 netdiag_traceroute(){
     
-    HAS_TRACERT=$(echo ${HAS_OPTS} | grep -c " traceroute ")
+    HAS_TRACERT=$(echo "${HAS_OPTS}" | grep -c "\ traceroute\ ")
     if [ ${HAS_TRACERT} -ne 1 ]; then
         notfound "traceroute"
         return
@@ -1773,8 +1773,8 @@ netdiag_traceroute(){
 ##function
 netdiag_lookup(){
 
-    HAST_HOST=$(echo ${HAS_OPTS} | grep -c " host ")
-    if [ $? -ne 1 ]; then
+    HAS_HOST=$(echo "${HAS_OPTS}" | grep -c "\ host\ ")
+    if [ ${HAS_HOST} -ne 1 ]; then
         notfound "host"
         return
     fi
