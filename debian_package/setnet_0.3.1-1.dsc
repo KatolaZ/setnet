@@ -13,19 +13,19 @@ Build-Depends: debhelper (>= 9)
 Package-List:
  setnet deb unknown optional arch=all
 Checksums-Sha1:
- 1a398f488a42d883dca76cb4906e43c925330b97 15400 setnet_0.3.1.orig.tar.xz
- d7f67afafe65c992afd08779a1d31bed58fdfb6d 9780 setnet_0.3.1-1.debian.tar.xz
+ fed8d433b45388726ab7e146c587af3a2c5754f4 15376 setnet_0.3.1.orig.tar.xz
+ 509be64b7145b0cee0516655337b6c527f2d26a0 9784 setnet_0.3.1-1.debian.tar.xz
 Checksums-Sha256:
- b8a5d4febd04c11aa80b3efef9a26351d6d9aed6ff7d00c76bac8c4f92a0a511 15400 setnet_0.3.1.orig.tar.xz
- ebed223a2d8aef6bd81c3371033bb4df838763431fdfd7ebd6f6a1e040d8e0e8 9780 setnet_0.3.1-1.debian.tar.xz
+ 8595913c2b981064cfdedb4f41a65ab6e840cbc876cbb31a17615b5978c8ca85 15376 setnet_0.3.1.orig.tar.xz
+ f4732082d160159393ab966075831f34898d9737757e0a3ecac9e80eb24816b3 9784 setnet_0.3.1-1.debian.tar.xz
 Files:
- 781408649882bf211bbc5c8317a33aeb 15400 setnet_0.3.1.orig.tar.xz
- 6fab0a2415688e31f4c4b01bd9e84da7 9780 setnet_0.3.1-1.debian.tar.xz
+ a540360ba5738e6e41fda9968f209af3 15376 setnet_0.3.1.orig.tar.xz
+ 6d2328649b35aecccd748a4280fd53a7 9784 setnet_0.3.1-1.debian.tar.xz
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEARECAAYFAli+lq4ACgkQXyCzrgtfBi/u9gCcDvPw9pj6MAhfFIQYpnLrYX/B
-pZMAn1NxckmL4mDAcbyEXhQ/VcNjsJHt
-=LMS4
+iEYEARECAAYFAli+mlkACgkQXyCzrgtfBi/lUgCfQFnJEUeLfucSLdxqAlCp8jGK
+SaUAn2ATwEbaVXVUyRanF2FnIUPaPTP6
+=MYf/
 -----END PGP SIGNATURE-----

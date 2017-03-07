@@ -2,7 +2,7 @@
 Hash: SHA1
 
 Format: 1.8
-Date: Tue, 07 Mar 2017 11:12:55 +0000
+Date: Tue, 07 Mar 2017 11:29:07 +0000
 Source: setnet
 Binary: setnet
 Architecture: source all
@@ -16,27 +16,27 @@ Description:
 Changes:
  setnet (0.3.1-1) unstable; urgency=medium
  .
-   * Version 0.3.1 -- See Changelog for details
+   * Version 0.3.1 -- See ChangeLog for details
 Checksums-Sha1:
- fbc26f1422d3edde6d9ef895f6f801a7fcbe0132 1043 setnet_0.3.1-1.dsc
- 1a398f488a42d883dca76cb4906e43c925330b97 15400 setnet_0.3.1.orig.tar.xz
- d7f67afafe65c992afd08779a1d31bed58fdfb6d 9780 setnet_0.3.1-1.debian.tar.xz
- e3ab49600e536f319ffb40ff054176b048af6c55 19308 setnet_0.3.1-1_all.deb
+ 38feb54f92950f71493fb352e0ba24b12b2d7659 1043 setnet_0.3.1-1.dsc
+ fed8d433b45388726ab7e146c587af3a2c5754f4 15376 setnet_0.3.1.orig.tar.xz
+ 509be64b7145b0cee0516655337b6c527f2d26a0 9784 setnet_0.3.1-1.debian.tar.xz
+ 76d1546623238e59b6701268f9531c36c838b24b 19314 setnet_0.3.1-1_all.deb
 Checksums-Sha256:
- 59837c1c21416f1375bdaebf9d5779ea4699ac44fa05e9ecccf91f6cfb38fcd1 1043 setnet_0.3.1-1.dsc
- b8a5d4febd04c11aa80b3efef9a26351d6d9aed6ff7d00c76bac8c4f92a0a511 15400 setnet_0.3.1.orig.tar.xz
- ebed223a2d8aef6bd81c3371033bb4df838763431fdfd7ebd6f6a1e040d8e0e8 9780 setnet_0.3.1-1.debian.tar.xz
- a865382549c974780bc17e99278abc693fcece0f060a9a039bfc0dd8bbaedc9a 19308 setnet_0.3.1-1_all.deb
+ 2fa1f91dc571f25c52288c30fe30f5dd06e9ee033811bf38289451432d22fde2 1043 setnet_0.3.1-1.dsc
+ 8595913c2b981064cfdedb4f41a65ab6e840cbc876cbb31a17615b5978c8ca85 15376 setnet_0.3.1.orig.tar.xz
+ f4732082d160159393ab966075831f34898d9737757e0a3ecac9e80eb24816b3 9784 setnet_0.3.1-1.debian.tar.xz
+ 276abdb7af5988f8d975ca09d1e832528c2a83ff806d7937c18d8995a98b9db5 19314 setnet_0.3.1-1_all.deb
 Files:
- 53bc50c8929d800c324f2c5fcfe4adde 1043 unknown optional setnet_0.3.1-1.dsc
- 781408649882bf211bbc5c8317a33aeb 15400 unknown optional setnet_0.3.1.orig.tar.xz
- 6fab0a2415688e31f4c4b01bd9e84da7 9780 unknown optional setnet_0.3.1-1.debian.tar.xz
- dbf0cae47b5f559986eb1c16b5d64f3b 19308 unknown optional setnet_0.3.1-1_all.deb
+ 3b57a9c74bbc027bcb7d0d32d5dbf9db 1043 unknown optional setnet_0.3.1-1.dsc
+ a540360ba5738e6e41fda9968f209af3 15376 unknown optional setnet_0.3.1.orig.tar.xz
+ 6d2328649b35aecccd748a4280fd53a7 9784 unknown optional setnet_0.3.1-1.debian.tar.xz
+ 4e1bf495eb6fb4171e15a5041076d226 19314 unknown optional setnet_0.3.1-1_all.deb
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEARECAAYFAli+lrEACgkQXyCzrgtfBi+vfgCeLa1xOavgefYNns8jCmWwC5P2
-Dz4AoJF3mJoFrTDCVy60GwACvMcdyjvB
-=BuaL
+iEYEARECAAYFAli+mlwACgkQXyCzrgtfBi+d3ACfcEPF2uxnw591BUrpLeMdHx9D
+OZQAn1UUBrMFkmLpKtpEDOFQBc1ZqdJs
+=CIQB
 -----END PGP SIGNATURE-----

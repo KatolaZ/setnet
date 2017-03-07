@@ -1,7 +1,7 @@
-1152eaf05f53bce6d223998bc6ba2f1f  usr/sbin/setnet.sh
+e2936091688ee3dff62db3f4b2e556db  usr/sbin/setnet.sh
 76a40a9d9c3b85dd6679be3b50dfbf90  usr/share/doc/setnet/ChangeLog
 d690d59753d9fcd42667d50efb859a68  usr/share/doc/setnet/README.Debian
-58703686a3ad132923e9aa821f3b5558  usr/share/doc/setnet/changelog.Debian.gz
+ad32982528fb73706b16e5defcea9291  usr/share/doc/setnet/changelog.Debian.gz
 ec9c62185a8fcc9231df4d2cefdcb990  usr/share/doc/setnet/changelog.gz
 e5218c2f383b136780a03ba5e3f610b2  usr/share/doc/setnet/copyright
 5085750511379132343cff7e67c8c4ba  usr/share/man/man8/setnet.8.gz
