@@ -1,3 +1,7 @@
+2017-03-07  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh (check_deps): Corrected a small bug in the parsing of options
+
 2017-01-29  KatolaZ  <katolaz@freaknet.org>
 
 		* setnet.sh:
