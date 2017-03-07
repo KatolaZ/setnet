@@ -29,7 +29,7 @@
 ## Initialisation
 ## 
 
-VERSION=0.3
+VERSION=0.3.1
 
 
 TOPSTR="setnet-${VERSION} [user: $(id -run)]"
