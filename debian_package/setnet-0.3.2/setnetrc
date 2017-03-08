@@ -1,0 +1,28 @@
+##
+##
+## setnetrc -- configuration file for setnet
+##
+##
+
+##
+## WPA_FILE: The default configuration file for wpa_supplicant
+##
+WPA_FILE=/etc/wpa_supplicant/wpa_setnet.conf
+
+
+##
+## LOGFILE: Location of the logfile
+##
+LOGFILE=/var/log/setnet.log
+
+##
+## TRUNCATE_LOG: Truncate the log file at startup
+##
+TRUNCATE_LOG="yes"
+
+##
+## WIFI_DEVICES: List of Wi-Fi devices, to be used if automatic
+## detection fails
+##
+
+##WIFI_DEVICES="wlan1 wlan4"

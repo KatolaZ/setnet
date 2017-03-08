@@ -1,0 +1,41 @@
+2017-03-08  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh (wifi_restart_wpa): Corrected a bug in the restart of
+				wpa_supplicant.
+
+2017-03-07  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh (check_deps): Corrected a small bug in the parsing of options
+
+2017-01-29  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh:
+			* removed "Load file" and "New File" in WiFi configuration 
+
+2017-01-23  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh:
+			* fixed a few minors bugs
+
+2017-01-20  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh (0.3):
+			* implemented check of running shell
+			* implemented workaround for zsh -- now fully supported 
+		* added chk_out and chk_exit
+			* all direct commands (e.g., ip, wpa_cli) are now checked
+	    * added support for EAP/PEAP
+		* added support for EAP/TLS
+		
+
+2017-01-07  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh (configure_device): Improved wifi detection
+		(netdiag_ping),	(netdiag_traceroute),(netdiag_query):
+			changed dialog to programbox
+		* solved viasualitation bug in ip config
+		* added a manpage
+		* Added configuration variable "WIFI_DEVICES"
+		* The "Setup interface" menu has been reorganised
+			* added "Config IP Address" and "Manage Wifi Networking"
+

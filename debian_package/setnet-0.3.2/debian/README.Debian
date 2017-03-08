@@ -1,0 +1,132 @@
++--------------+
+|    setnet    |
++--------------+
+
+Copyleft (C) Vincenzo "KatolaZ" Nicosia <katolaz@freaknet.org>
+		  	 2016, 2017
+
+=== DESCRIPTION ===
+
+setnet is a shell script with a dialog UI to configure ethernet and
+wifi connections. It is meant to be POSIX-compliant, and has been
+tested with bash, busybox, dash, ksh, mksh, posh, and yash. It is
+still to be considered beta software, so you should use it AT YOUR OWN
+RISK, but it is already fully functional. 
+
+=== LICENSE ===
+
+setnet is Free Software, and can be used and distributed under the
+terms of the GNU General Public License, either version 3 of the
+licence or, at your option, any later version.
+
+Please see the file LICENSE for more information
+
+=== DEPENDENCIES ===
+
+In order to run setset, you MUST satisfy this (relatively small) set
+of dependencies:
+
+ - a posix-compliant shell (bash, busybox, dash, ksh, mksh, posh, and
+   	 				 	    yash have been tested)
+
+ - dialog (version 1.2 tested, but it should work with previous
+   		  versions as well)
+
+ - dhcp-client (for dhclient, tested with isc-dhcp-client)
+
+ - iproute2 (for ip)
+
+ - wireless-tools (for iwconfig, currently required for interface
+   				   identification)
+
+Most of those tools might already be installed in your system anyway.
+In particular, setnet uses:
+
+ - dialog: to provide a minimal Text-based User Interface,
+ - ip: to configure network interfaces and get information about them,
+ - dhclient: for DHCP-based IP configuration
+ - iwconfig: to check whether a network device is a wifi adapter
+
+In order to use the full set of functionalities provided by setnet,
+you MIGHT also need the following packages:
+
+ - wpa_supplicant (for wifi configuration)
+
+ - net-tools (for netstat, to gather information about network status)
+
+ - iputils-ping (for ping)
+
+ - bind9-nost (for host, used to check DNS configuration)
+
+ - traceroute (to trace the route between your host and any other host
+   			   in the Internet)
+
+Again, most of them should be already installed in your system anyway.
+
+=== USAGE ===
+
+setnet is installed under /usr/sbin/setnet.sh. If invoked with "-h",
+it provides a list of supported options:
+
+$ ./setnet.sh -h
+Usage: setnet.sh [OPTION]
+Options:
+         -c cfg_file    Load configuration from cfg_file.
+         -v  Print version number and exit.
+         -h  Show this help.
+$
+
+If the argument "-c" is specified, setnet will use the provided
+configuration file. Otherwise, it will look for its configuration file
+in one of the following locations:
+
+  - /etc/setnetrc
+  - ~/.setnetrc
+  
+in the given order. The following configuration variables should be
+defined in setnetrc:
+
+
+  - WPA_FILE
+ 	This is the file configuration file used by wpa_supplicant. 
+
+  - LOGNAME
+	This is the file used for logging.
+
+  - TRUNCATE_LOG
+  	if equal to "yes", the log file will be truncated when setnet
+	starts
+
+
+=== root vs. mortal users ===
+
+Networking is an amdinistration task, and as such should be performed
+by the host administrator, i.e., the user with UID 0 (normally called
+"root"). However, in many modern GNU/Linux systems it is customary to
+allow normal users to perform some administration tasks. There are at
+least two concrete possibilities to allow a particular user (in the
+following we call such user "fool") to configure network interfaces
+using setnet.
+
+
+-- 1) First approach: using sudo
+
+If sudo is installed in your system, it is sufficient to add the
+following line:
+
+  fool     ALL=NOPASSWD: /usr/sbin/setnet.sh
+
+to the file /etc/sudoers, and the user "fool" will be able to run
+setnet.sh with effective UID 0 (i.e., as if it was root), by using the
+command:
+
+[fool@host]$ sudo /usr/sbin/setnet.sh
+
+and thus will be able to perform all the needed admin tasks to
+configure networking.
+
+-- 2) Second approach: using sup
+
+......TO BE DOCUMENTED......
+
+
