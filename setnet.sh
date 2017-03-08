@@ -1142,18 +1142,21 @@ wifi_restart_wpa(){
     WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME} " | 
 sed -r -e 's/^\ +//g' | cut -d " " -f 1)
     
-	  log "wifi_restart_wpa" "WPA_PID: ${WPA_PID}"
-	  kill -9 ${WPA_PID}
-    
-	  wpa_supplicant -B -i ${DEVNAME} -c ${WPA_FILE} -P${WPA_PIDFILE} 2>&1 >/dev/null
-	  WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME}" | \
+	if [ -n "${WPA_PID}" ]; then 
+		log "wifi_restart_wpa" "WPA_PID: ${WPA_PID}"
+		kill -9 ${WPA_PID}
+	else
+		log "wifi_restart_wpa" "no wpa_supplicant is running!!!"
+    fi
+	wpa_supplicant -B -i ${DEVNAME} -c ${WPA_FILE} -P${WPA_PIDFILE} 2>&1 >/dev/null
+	WPA_PID=$(ps ax | grep wpa_supplicant | grep " -i ${DEVNAME}" | \
                      sed -r -e 's/^\ +//g' | cut -d " " -f 1 )
-	  WPA_PID_SAVED=$(cat ${WPA_PIDFILE})
+	WPA_PID_SAVED=$(cat ${WPA_PIDFILE})
     log "wifi_restart_wpa" "WPA_PID: ${WPA_PID} WPA_PID_SAVED: ${WPA_PID_SAVED}"
 	  if [ -n "${WPA_PID}" ] &&  [ "${WPA_PID}" != "${WPA_PID_SAVED}" ]; then
 		    eval "${DIALOG}   --msgbox 'Error restarting wpa_supplicant' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
-	  else
+	   else
 		    eval "${DIALOG}   --msgbox 'wpa_supplicant restarted successfully' \
 			   ${INFO_HEIGHT} ${INFO_WIDTH}"
 	  fi
