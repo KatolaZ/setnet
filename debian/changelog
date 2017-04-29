@@ -1,3 +1,11 @@
+setnet (0.3.2-4) unstable; urgency=medium
+
+  [ KatolaZ ]
+  * added build-dep on groff
+  * added missing build-dep on git
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Sat, 29 Apr 2017 14:27:52 +0100
+
 setnet (0.3.2-3) unstable; urgency=medium
 
   [ KatolaZ ]
