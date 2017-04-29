@@ -1,3 +1,13 @@
+setnet (0.3.2-3) unstable; urgency=medium
+
+  [ KatolaZ ]
+  * deleted unwanted files
+  * included setnet.docs
+  * Added correct copyright information
+
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Sat, 29 Apr 2017 12:30:40 +0100
+
 setnet (0.3.2-2) unstable; urgency=medium
 
   * release for experimental
