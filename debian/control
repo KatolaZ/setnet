@@ -1,0 +1,19 @@
+Source: setnet
+Section: unknown
+Priority: optional
+Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.8
+Homepage: http://kalos.mine.nu/setnet 
+#Vcs-Git: git://anonscm.debian.org/collab-maint/setnet.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/setnet.git
+
+Package: setnet
+Architecture: all
+Depends: bash | busybox | dash | ksh | mksh | posh | yash | zsh, dhcp-client, dialog, iproute2, iw 
+Suggests: wpasupplicant, pastebinit, net-tools, iputils-ping, bind9-host, traceroute
+Description: simple shell/dialog tool to configure networks 
+ setnet is a shell script with a dialog UI to configure ethernet
+ and wifi connections. It is meant to be POSIX-compliant, and has
+ been tested on bash, busybox, dash, ksh, mksh, posh, yash, and zsh.
+ 
