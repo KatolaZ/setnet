@@ -1,3 +1,10 @@
+setnet (0.3.2-6) unstable; urgency=medium
+
+  [ KatolaZ ]
+  * removed Section: header in debian/control
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Sat, 29 Apr 2017 15:25:52 +0100
+
 setnet (0.3.2-5) unstable; urgency=medium
 
   * ....
