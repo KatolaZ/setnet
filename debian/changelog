@@ -1,3 +1,9 @@
+setnet (0.3.2-5) unstable; urgency=medium
+
+  * just a version bump to make dak get it into the repos
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Sat, 29 Apr 2017 14:52:33 +0100
+
 setnet (0.3.2-4) unstable; urgency=medium
 
   * stage 0.3.2-4 for build into experimental
