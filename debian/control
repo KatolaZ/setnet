@@ -1,5 +1,4 @@
 Source: setnet
-Section: unknown
 Priority: optional
 Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
 Build-Depends: debhelper (>=9), groff, git
