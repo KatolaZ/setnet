@@ -1,5 +1,11 @@
 setnet (0.3.2-2) unstable; urgency=medium
 
+  * release for experimental
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Sat, 29 Apr 2017 11:38:19 +0100
+
+setnet (0.3.2-2) unstable; urgency=medium
+
   [ KatolaZ ]
   * creating suite suites/experimental
   * Added html-converted manpage to debian/install
