@@ -1,10 +1,11 @@
 Source: setnet
 Priority: optional
+Section: net
 Maintainer: Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
 Build-Depends: debhelper (>=9), groff, git
 Standards-Version: 3.9.8
 Homepage: http://kalos.mine.nu/setnet 
-#Vcs-Git: git://anonscm.debian.org/collab-maint/setnet.git
+Vcs-Git: git://git.devuan.org/devuan-packages/setnet.git
 #Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/setnet.git
 
 Package: setnet
