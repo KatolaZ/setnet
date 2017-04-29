@@ -1,5 +1,11 @@
 setnet (0.3.2-5) unstable; urgency=medium
 
+  * ....
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Sat, 29 Apr 2017 14:58:42 +0100
+
+setnet (0.3.2-5) unstable; urgency=medium
+
   * just a version bump to make dak get it into the repos
 
  -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Sat, 29 Apr 2017 14:52:33 +0100
