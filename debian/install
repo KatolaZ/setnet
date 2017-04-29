@@ -3,3 +3,4 @@ setnetrc /etc/
 wpa_setnet.conf /etc/wpa_supplicant/
 setnet.8.gz /usr/share/man/man8/
 ChangeLog /usr/share/doc/setnet/
+setnet.8.html /usr/share/doc/setnet/
