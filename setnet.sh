@@ -650,7 +650,7 @@ wpa_authenticate_EAP_TLS(){
 
 	
 	DEVNAME=$1
-	W_ESSID=$2
+	W_ESSID="$2"
 
 	## We first add the new network
 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
@@ -670,7 +670,7 @@ wpa_authenticate_EAP_TLS(){
 	eval "${DIALOG} --form 'PEAP parameters:' \
 		 ${FORM_HEIGHT} ${FORM_WIDTH} 3 \
 	'identity'      1 1 ''    1 20 30 80 \
-    'server certificate' 2 1 '' 2 20 30 200 \
+    'CA certificate' 2 1 '' 2 20 30 200 \
     'client certificate' 3 1 '' 3 20 30 200 \
     'private key'        4 1 '' 4 20 30 200 \
     'private key password' 5 1 '' 5 30 30 80 \
@@ -727,7 +727,7 @@ wpa_authenticate_EAP_PEAP(){
 	##unimplemented "wpa_authenticate_EAP_PEAP"
 
 	DEVNAME=$1
-	W_ESSID=$2
+	W_ESSID="$2"
 
 	## We first add the new network
 	NET_NUM=$(wpa_cli -i ${DEVNAME} add_network | tail -1)
@@ -747,7 +747,7 @@ wpa_authenticate_EAP_PEAP(){
 		 ${FORM_HEIGHT} ${FORM_WIDTH} 3 \
 	'identity'      1 1 ''    1 20 30 80 \
 	'password'      2 1 ''    2 20 30 80 \
-    'server certificate' 3 1 '' 3 20 30 80 \
+    'CA certificate' 3 1 '' 3 20 30 80 \
 	" 2>${TMPFILE}
 
 	if [ $? != "0" ]; then
@@ -890,12 +890,13 @@ wpa_authenticate_PSK(){
 wifi_authenticate_WPA(){
 
 	DEVNAME=$1
-	W_ESSID=$2
+	W_ESSID="$2"
 
 	##
 	## Construct the menu with all the available authentication modes
 	##
 	MODES=$(echo $W_FLAGS | sed -r -e 's/\]\[/\n/g;s/\[//g;s/\]//g' | grep -E "^WPA")
+	log "wifi_authenticate_WPA" "W_ESSID  ${W_ESSID}"
 	log "wifi_authenticate_WPA" "MODES: ${MODES}"
 	MENU_ITEMS=""
 	CNT=0
@@ -930,13 +931,13 @@ wifi_authenticate_WPA(){
 	log "wifi_authenticate_WPA" "SEL_MODE: ${SEL_MODE}" 
 	case ${SEL_MODE} in
 		"WPA+EAP/PEAP"|"WPA2+EAP/PEAP")
-		    wpa_authenticate_EAP_PEAP ${DEVNAME} ${W_ESSID}
+		    wpa_authenticate_EAP_PEAP ${DEVNAME} "${W_ESSID}"
 		;;
 		"WPA+EAP/TLS"|"WPA2+EAP/TLS")
-			wpa_authenticate_EAP_TLS ${DEVNAME} ${W_ESSID}
+			wpa_authenticate_EAP_TLS ${DEVNAME} "${W_ESSID}"
 		;;
 		"WPA+PSK"|"WPA2+PSK")
-			wpa_authenticate_PSK ${DEVNAME} ${W_ESSID}
+			wpa_authenticate_PSK ${DEVNAME} "${W_ESSID}"
 			;;
 		*)
 			log "wifi_authenticate_WPA" "Error. SEL_MODE '${SEL_MODE}' unsupported"
@@ -999,7 +1000,7 @@ wifi_authenticate(){
 	
 	### This will configure WPA
 	if [ "${HAS_WPA}" != "0" ]; then
-		wifi_authenticate_WPA ${DEVNAME} ${W_ESSID}
+		wifi_authenticate_WPA ${DEVNAME} "${W_ESSID}"
 		if [ $? = "0" ]; then
 			log "wifi_authenticate" "WPA configured"
 			return 0
