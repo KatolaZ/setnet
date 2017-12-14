@@ -29,11 +29,14 @@
 ## Initialisation
 ## 
 
-VERSION=0.3.2
+VERSION=0.4
 
 
 TOPSTR="setnet-${VERSION} [user: $(id -run)]"
 DIALOG="dialog --backtitle \"${TOPSTR}\" --clear "
+DIALOG_EXTRA="dialog --backtitle \"${TOPSTR}\" --clear --extra-button --extra-label 'Quit' "
+
+
 
 
 ###############################
@@ -538,7 +541,7 @@ ${DEV_GW}\nDNS1: ${DEV_DNS1}\nDNS2: ${DEV_DNS2}'\
 		if [ -n "${DEV_DNS2}" ]; then
 			echo "nameserver ${DEV_DNS2}" >> /etc/resolv.conf
 		fi
-		show_device_conf "${DEVNAME}"
+		[ -z "${SUPPRESS}" ] && show_device_conf "${DEVNAME}"
 	#fi
 }
 
@@ -556,7 +559,7 @@ config_ip_dhcp(){
     if [ $! -ne 0 ];then
 		log "config_ip_dhcp" "dhclient aborted"
 	fi
-	show_device_conf ${DEVNAME}
+	[ -z "${SUPPRESS}" ] && show_device_conf ${DEVNAME}
 }
 
 
@@ -566,7 +569,7 @@ configure_ip_address(){
 ##local 
     DEVNAME=$1
 	  
-	eval "${DIALOG}   --cancel-label 'Up' \
+	eval "${DIALOG}  --cancel-label 'Up' \
 		--menu 'Configuring ${DEVNAME}' ${INFO_HEIGHT} ${INFO_WIDTH} 4 \
 		'DHCP' ''\
 		'Static' ''" 2>${TMPFILE}
@@ -592,8 +595,8 @@ wifi_essid_from_mac(){
     ##local 
     W_MAC=$2
 	  
-    W_ESSID=$(wpa_cli -i "${DEVNAME}" scan_results | grep -E "^${W_MAC}" | \
-       sed -r -e 's/\t/\|/g' | cut -d "|" -f 5)
+    W_ESSID="$(wpa_cli -i "${DEVNAME}" scan_results | grep -E "^${W_MAC}" | \
+       sed -r -e 's/\t/\|/g' | cut -d "|" -f 5)"
 
 	log "wifi_essid_from_mac" "Recovered ESSID: ${W_ESSID}"
 }
@@ -1013,7 +1016,7 @@ wifi_authenticate(){
 	
 	log "wifi_authenticate" "Trying open (no WPA) configuration..."
 	
-	wifi_authenticate_NONE ${DEVNAME} ${W_ESSID}
+	wifi_authenticate_NONE "${DEVNAME}" "${W_ESSID}"
 	if [ $? = "0" ]; then
 		log "wifi_authenticate" "Open connection configured"
 		return 0
@@ -1363,7 +1366,7 @@ show_device_menu(){
     while true; do 	
         DEV_STATUS=$(ip -o link | cut -d " " -f 2,9 | grep -E "^${DEVNAME}: " | cut -d " " -f 2)
         log "show_device_menu" "DEVNAME: ${DEVNAME} DEV_STATUS: ${DEV_STATUS}"
-		    eval "${DIALOG}   --cancel-label 'Up' --menu\
+		    eval "${DIALOG_EXTRA}   --cancel-label 'Up' --menu\
              'Device: ${DEVNAME}\nStatus: ${DEV_STATUS}' \
 			       ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 8 \
 			       'View' 'View current configuration' \
@@ -1372,10 +1375,12 @@ show_device_menu(){
                    'Start' 'Bring interface up' \
 			       'Stop' 'Put interface down' \
 			       'Restart' 'Restart interface'" 2> ${TMPFILE}
-		    
-		    if [ $? -eq 1 ]; then
-			      return
-		    fi
+		    ext=$?
+		    if [ $ext -eq 1 ]; then
+			    return
+		    elif [ $ext -eq 3 ]; then
+				exit 0
+			fi
 		    
 		    DEV_ACTION=$(cat ${TMPFILE})
 		    case ${DEV_ACTION} in
@@ -1417,12 +1422,12 @@ show_devs() {
 	  DEVICE_TAGS=""
     
 	  for i in  $DEVICES; do
-		    if [ "$i" != "lo" ]; then
+		    if [ "$i" != "lo" -o -n "${SHOW_LO}" ]; then
 			      DEVICE_TAGS="${DEVICE_TAGS} $i $i" 
 		    fi
 	  done
     
- 	  eval "${DIALOG}   --cancel-label 'Up' \
+ 	  eval "${DIALOG_EXTRA}   --cancel-label 'Up' \
 			   --menu 'Select Interface to configure' ${WINDOW_HEIGHT} ${WINDOW_WIDTH} 4 \
 			   ${DEVICE_TAGS}" 2> ${TMPFILE}
 	  return $?
@@ -1432,14 +1437,17 @@ show_devs() {
 ##function 
 dev_config_menu(){
     
-	  while  true; do 
-		    show_devs 
-		    if [ $? -eq 1 ]; then
-			      return
-		    fi
-		    DEVNAME=$(cat ${TMPFILE})
-		    show_device_menu ${DEVNAME}			
-	  done
+	while  true; do 
+		show_devs
+		ext=$?
+		if [ ${ext} -eq 1 ]; then
+			return
+		elif [ ${ext} -eq 3 ]; then
+			exit 0
+		fi
+		DEVNAME=$(cat ${TMPFILE})
+		show_device_menu ${DEVNAME}			
+	done
 }
 
 ##function 
@@ -1990,6 +1998,7 @@ SCRIPTNAME=$1
 	echo "Usage: ${SCRIPTNAME} [OPTION]"
 	echo "Options:"
 	printf  "\t -c cfg_file\tLoad configuration from cfg_file.\n"
+	printf  "\t -c trace_file\tDump dialog debug trace to trace_file.\n"
 	printf  "\t -v\t\tPrint version number and exit.\n"
 	printf  "\t -h\t\tShow this help.\n"
 	
@@ -2082,6 +2091,24 @@ initialise(){
 	log "initialise" "SUDO_UID: ${SUDO_UID}"
 	log "initialise" "SUP_UID: ${SUP_UID}"
 	log "initialise" "USING_SUDO: ${USING_SUDO}"
+
+	SUPPRESS=""
+	if [ -n "${SUPPRESS_INFO}" ] &&
+		   [ "${SUPPRESS_INFO}" != "no" ] &&
+		   [ "${SUPPRESS_INFO}" != "NO" ]; then
+		SUPPRESS="1"
+	fi
+
+	if [ -n "${SHOW_LO}" ] &&
+		   [ "${SHOW_LO}" != "no" ] &&
+		   [ "${SHOW_LO}" != "NO" ]; then
+		SHOW_LO="1"
+	else
+		SHOW_LO=""
+	fi
+	
+	log "initialise" "SUPPRESS: ${SUPPRESS}"
+	
 }
 
 
@@ -2097,8 +2124,9 @@ log_show(){
 ##function 
 main(){
 
-
-	show_disclaimer
+	log "main" "SUPPRESS: ${SUPPRESS}"
+	
+	[ -z "${SUPPRESS}" ] && show_disclaimer
 	
 	SETNETRC=$(realpath ${SETNETRC})
 	log "main" "Using config file \"${SETNETRC}\""
@@ -2119,23 +2147,22 @@ main(){
       log "main" "ACTION: ${ACTION}"
 		  case ${ACTION} in
 			    "Setup")
-				      dev_config_menu
-				      ;;
-          "Info")
-              netdiag_menu
-              ;;
-          "Dump")
-              dump_menu
-              ;;
-          "Log")
-              log_show
-              ;;
+				    dev_config_menu
+				    ;;
+				"Info")
+					netdiag_menu
+					;;
+				"Dump")
+					dump_menu
+					;;
+				"Log")
+					log_show
+					;;
 			    "About")
-				      about_menu
-				      ;;
+				    about_menu
+				    ;;
 		  esac
 	done
-  
 }
 
 

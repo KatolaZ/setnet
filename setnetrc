@@ -26,3 +26,18 @@ TRUNCATE_LOG="yes"
 ##
 
 ##WIFI_DEVICES="wlan1 wlan4"
+
+
+##
+## SUPPRESS_INFO: if set to "yes", avoid to show information panels
+## after certain configuration steps
+##
+SUPPRESS_INFO="yes"
+
+
+##
+## SHOW_LO: whether we should show loopback devices in the device list
+##
+
+SHOW_LO="yes"
+
