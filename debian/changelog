@@ -1,3 +1,9 @@
+setnet (0.4+devuan1) unstable; urgency=medium
+
+  * new upstream version -- several fixes
+
+ -- Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>  Thu, 03 May 2018 12:39:33 +0100
+
 setnet (0.3.2+devuan1.2) unstable; urgency=medium
 
   [ KatolaZ ]

@@ -1,3 +1,13 @@
+2018-05-03  KatolaZ  <katolaz@freaknet.org>
+
+		* setnet.sh: fixed a bug in essid management
+		* added "EXIT" button in deep windows
+		* added config option "SUPPRESS_INFO" to remove useless
+		  notifications
+		* added config option "SHOW_LO" to hide loopback devices
+		* Renamed fields in wifi cert configuration
+		* Updated manpage
+
 2017-03-08  KatolaZ  <katolaz@freaknet.org>
 
 		* setnet.sh (wifi_restart_wpa): Corrected a bug in the restart of
@@ -10,7 +20,7 @@
 2017-01-29  KatolaZ  <katolaz@freaknet.org>
 
 		* setnet.sh:
-			* removed "Load file" and "New File" in WiFi configuration 
+		* removed "Load file" and "New File" in WiFi configuration
 
 2017-01-23  KatolaZ  <katolaz@freaknet.org>
 
@@ -26,7 +36,7 @@
 			* all direct commands (e.g., ip, wpa_cli) are now checked
 	    * added support for EAP/PEAP
 		* added support for EAP/TLS
-		
+
 
 2017-01-07  KatolaZ  <katolaz@freaknet.org>
 

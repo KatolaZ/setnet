@@ -1,5 +1,5 @@
 .\" The following requests are required for all man pages.
-.Dd January 06, 2017
+.Dd May 03, 2018
 .Dt SETNET 8 SMM
 .Os Linux
 .Sh NAME
@@ -32,6 +32,13 @@ including the routing table, content of resolv.conf and nsswitch.conf,
 active TCP/IP connections, running daemons, etc., and to dump those
 information to a file. Support for posting a dump of network status to
 websites like pastebin.com is under development.
+
+.Pp
+setnet.sh uses
+.Em /bin/sh
+by default. It has been tested with several standard shells, including
+bash, busybox, dash, ksh, mksh, posh, sh, yash, and zsh but it should work
+correctly with any POSIX-compliant shell.
 
 .Pp
 setnet.sh recognises the following options:
@@ -145,6 +152,11 @@ setnet.sh starts.
 .It Ev WIFI_DEVICES
 List of wifi devices. This list is used only when automatic detection
 of wifi devices fails.
+.It Ev SUPPRESS_INFO
+If set to "yes" or "YES", setnet will suppress verbose notifications.
+.It Ev SHOW_LO
+If set to "yes" or "YES" setnet will include the loopback device in
+the list of available network devices.
 .El
 
 These variables are normally set in the setnetrc configuration file
@@ -193,14 +205,14 @@ exists, it takes precedence over
 .\"       fprintf/stderr type diagnostics)
 .\" .Sh DIAGNOSTICS
 .Sh SEE ALSO
-ip(8), dhclient(8), wpa_supplicant(8), wpa_cli(8), netstat(8).
+ip(8), iw(8), dhclient(8), wpa_supplicant(8), wpa_cli(8), netstat(8).
 .\" .Sh CONFORMING TO
 .\" .Sh HISTORY
 .Sh AUTHORS
 setnet.sh is Free Software, distributed under the terms of the GNU
 General Public License (GPL), version 3 of the License.
 .Pp
-setnet.sh is copyleft (c) by
+setnet.sh is copyleft (c) 2016-2018 by
 .An Vincenzo (KatolaZ) Nicosia <katolaz@freaknet.org>
 
 .Sh BUGS

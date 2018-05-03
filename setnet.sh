@@ -20,7 +20,7 @@
 # ----------------------------------------------------------------------
 #
 # Copyleft (C) Vincenzo "KatolaZ" Nicosia (katolaz@freaknet.org) --
-# (2016, 2017)
+# (2016-2018)
 #
 #
 
@@ -1465,16 +1465,19 @@ Ethernet/Wi-Fi interfaces.
 
 Both Static and DHCP-based IP configuration are supported. 
 
-At the moment, only WPA-PSK and open (no key) Wi-Fi connections are
-available. 
+Setnet supports the configuration of open (no-key), WPA-Personal
+(WPA-PSK and WPA2-PSK) and WPA-Enterprise (EAP/PEAP and EPA/TLS) Wi-Fi
+connections.
 
 For more information, please visit the webpage of the project:
 
     http://kalos.mine.nu/setnet/
 
+or, better, RTFM.
+
 Please report bugs at:
 
-    https://git.devuan.org/KatolaZ/setnet
+    https://git.devuan.org/devuan-packages/setnet
 
 EOF
 	eval "${DIALOG}   --cr-wrap --textbox ${TMPFILE} ${WINDOW_HEIGHT} ${WINDOW_WIDTH}"
@@ -1491,7 +1494,7 @@ show_copyright(){
 --------------------------------------------------------------------
 
   Copyleft (C) Vincenzo "KatolaZ" Nicosia <katolaz@freaknet.org> 
-               2016, 2017
+               2016-2018
 
 --------------------------------------------------------------------
 
@@ -1525,7 +1528,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------
 
    Copyleft (C) Vincenzo "KatolaZ" Nicosia <katolaz@freaknet.org> 
-                2016, 2017
+                2016-2018
 
 --------------------------------------------------------------------
 
@@ -2010,7 +2013,7 @@ show_version(){
 ##local 
 SCRIPTNAME=$1
 	echo "${SCRIPTNAME} -- version ${VERSION}"
-	echo "Copyleft (C) Vincenzo \"KatolaZ\" Nicosia (katolaz@freaknet.org) -- 2016, 2017"
+	echo "Copyleft (C) Vincenzo \"KatolaZ\" Nicosia (katolaz@freaknet.org) -- 2016-2018"
 	echo "This is free software. You can use and redistribute it under the "
 	echo "terms of the GNU General Public Licence version 3 or (at your option)"
 	echo "any later version."
@@ -2028,7 +2031,7 @@ show_disclaimer(){
                 -+- setnet.sh ${VERSION} -+-
 
       Copyleft (C) KatolaZ (katolaz@freaknet.org) 
-                    2016, 2017
+                    2016-2018
 
       -+- This is a beta release of setnet.sh -+-
    
