@@ -7,8 +7,11 @@ or dhcp-based IP configuration.
 
 For more information, please visit the webpage:
 
-[http://kalos.mine.nu/setnet](http://kalos.mine.nu/setnet)
+[http://katolaz.net/setnet](http://katolaz.net/setnet)
 
+The main remote for this repository is at:
+
+[https://git.katolaz.net/setnet](https://git.katolaz.net/setnet)
 
 ## Dependencies ##
 
