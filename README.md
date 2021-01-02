@@ -9,6 +9,8 @@ For more information, please visit the webpage:
 
 [http://katolaz.net/setnet](http://katolaz.net/setnet)
 
+**The GitHub repository is not updated frequently** 
+
 The main remote for this repository is at:
 
 [https://git.katolaz.net/setnet](https://git.katolaz.net/setnet)
